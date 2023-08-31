@@ -1,3 +1,18 @@
+# Code Jam 10 
+# Team: The Monkey Patches 
+
+## Team Members
+- @bast0006 (.bast.)
+- @Chara98 (chara98)
+- @Ethan-Mr-Hunt (brucewayne2800)
+- @FieryIceStickie (fieryicestickie)
+- @LioQing (lioqing)
+- @mache102 (segtwo)
+
+
+
+___
+
 # Python Discord Code Jam Repository Template
 
 ## A Primer
