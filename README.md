@@ -1,5 +1,5 @@
-# Code Jam 10 
-# Team: The Monkey Patches 
+# Code Jam 10
+# Team: The Monkey Patches
 
 ## Team Members
 - @bast0006 (.bast.)
