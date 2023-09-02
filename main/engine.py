@@ -55,7 +55,10 @@ class Engine:
         """
         self.logger.debug("Adding new layer '%s' at priority %s", name, "default" if priority is None else priority)
         if priority is None:
-            priority = max(self._layer_priorities.values(), default=0) + 1
+            if not self._layer_priorities:
+                priority = 0
+            else:
+                priority = self._layer_priorities[-1][0] + 1
 
         if name in self._layers.keys():
             raise ValueError("Duplicate layer name")
