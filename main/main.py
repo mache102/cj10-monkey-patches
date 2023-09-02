@@ -1,5 +1,7 @@
 import logging
+
 import pygame
+
 from main.engine import Engine
 
 logging.basicConfig()

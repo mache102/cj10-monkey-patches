@@ -1,7 +1,8 @@
-import pygame
 import abc
+
 import numpy
 import numpy.typing
+import pygame
 
 
 class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
@@ -26,7 +27,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
     def center(self) -> tuple[int, int]:
         """The center of the component."""
         return self.position[0] + self.size[0] // 2, self.position[1] + self.size[1] // 2
-    
+
     @property
     def surface(self) -> numpy.typing.NDArray[numpy.uint8]:
         """The surface of the component."""
@@ -56,7 +57,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
 class BaseButton(BaseComponent):
     """Component of the UI"""
-    
+
     is_down: bool
 
     def __init__(self):
@@ -93,10 +94,10 @@ def make_surface_rgba(array: numpy.typing.NDArray[numpy.uint8]):
     surface = pygame.Surface(shape[0:2], pygame.SRCALPHA, 32)
 
     # Copy the rgb part of array to the new surface.
-    pygame.pixelcopy.array_to_surface(surface, array[:,:,0:3])
+    pygame.pixelcopy.array_to_surface(surface, array[:, :, 0:3])
 
     # Copy the alpha part of array to the surface using a pixels-alpha view of the surface.
     surface_alpha = numpy.array(surface.get_view('A'), copy=False)
-    surface_alpha[:,:] = array[:,:,3]
+    surface_alpha[:, :] = array[:, :, 3]
 
     return surface
