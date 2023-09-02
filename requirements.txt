@@ -1,3 +1,6 @@
-numpy
-pygame-ce=2.3.1
-pillow
+numpy==1.25.2
+pydantic==2.3.0
+pydantic_core==2.6.3
+pygame-ce==2.3.1
+
+# rmb to add pillow
