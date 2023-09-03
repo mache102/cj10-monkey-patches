@@ -132,7 +132,7 @@ class Engine:
         """Start the engine."""
         self.running = True
 
-        # Test
+        # TODO: Remove this, this is just for testing
         self.add_layer("test button", pygame.sprite.RenderUpdates())
         self.add_sprite("test button", TestButton())
 
@@ -145,7 +145,7 @@ class Engine:
         pygame.quit()
 
 
-# TODO: Remove this
+# TODO: Remove this, this is just for testing
 class TestButton(components.BaseComponent):
     """A count button."""
 
@@ -153,27 +153,34 @@ class TestButton(components.BaseComponent):
 
     def __init__(self):
         super().__init__()
-        self.set_size((200, 50))
+        # height, width
+        self.set_size((50, 200))
+
+        # y, x
         self.set_position((100, 100))
 
         self.render_text()
 
     def render_text(self):
         """Render the text."""
-        surface = np.ndarray((200, 50, 4), dtype=np.uint8)
-        surface.fill(255)
+        from main.engine.utils import arr2d_swap_xy
+
+        image_array = np.ndarray((50, 200, 4), dtype=np.uint8)
+        image_array.fill(255)
 
         # Use pygame text for testing
         font = pygame.font.SysFont("Arial", 40)
         text = font.render(str(self.count), True, (0, 0, 0)).convert_alpha()
-        text_surface = pygame.surfarray.pixels3d(text)
 
-        # if alpha of text is 0, set text_surface of the pixel to 255, 255, 255
-        text_surface[pygame.surfarray.pixels_alpha(text)[:, :] == 0] = 255
+        # Change the pygame's format of (x, y) to engine's format of (y, x)
+        text_image = arr2d_swap_xy(pygame.surfarray.pixels3d(text))
 
-        surface[:text.get_width(), :text.get_height(), :3] = text_surface
+        # if alpha of text is 0, set text_image of the pixel to 255, 255, 255
+        text_image[arr2d_swap_xy(pygame.surfarray.pixels_alpha(text))[:, :] == 0] = 255
 
-        self.set_surface(surface)
+        image_array[:text.get_height(), :text.get_width(), :3] = text_image
+
+        self.set_surface(image_array)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""

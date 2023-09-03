@@ -2,13 +2,9 @@ from pathlib import Path
 from typing import Literal, NoReturn
 
 import numpy as np
-import numpy.typing as npt
 from PIL import Image
 
-# 8 bit int array of shape (height, width, channel count)
-ImageArray = npt.NDArray[np.uint8]
-# 8 bit int array of shape (tiled height, tiled width, tile height, tile width, channel count)
-TileArray = npt.NDArray[np.uint8]
+from .typing import ImageArray, TileArray
 
 
 def get_img_arr(image_path: Path) -> ImageArray:
