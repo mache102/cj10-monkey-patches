@@ -1,4 +1,5 @@
 import abc
+
 import numpy
 import numpy.typing
 import pygame
