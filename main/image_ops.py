@@ -44,7 +44,7 @@ def rotate_tiles(tile_arr: TileArray,
     Tile positions are given by (row index, column index)
     """
     *indices, = zip(*tile_pos)
-    # tile_arr[row_indices, col_indices] is an array of tiles,
+    # tile_arr[*indices] is an array of tiles,
     # so axes=(1, 2) ensures that the tiles are being rotated
     tile_arr[*indices] = np.rot90(tile_arr[*indices], k=rotation // 90, axes=(1, 2))
 
