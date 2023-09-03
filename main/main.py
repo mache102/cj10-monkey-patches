@@ -1,5 +1,10 @@
+import logging
+
 import pygame
-from engine import Engine
+
+from main.engine import Engine
+
+logging.basicConfig()
 
 pygame.init()
 
