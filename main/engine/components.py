@@ -1,5 +1,4 @@
 import abc
-
 import numpy
 import numpy.typing
 import pygame
@@ -8,10 +7,14 @@ import pygame
 class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
     """A sprite that can be drawn by the engine."""
 
+    is_down: bool
+
     def __init__(self):
         super().__init__()
         self.image = pygame.Surface((0, 0)).convert_alpha()
         self.rect = self.image.get_rect()
+
+        self.is_down = False
 
     @property
     def position(self) -> tuple[int, int]:
@@ -32,6 +35,11 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
     def surface(self) -> numpy.typing.NDArray[numpy.uint8]:
         """The surface of the component."""
         return pygame.surfarray.pixels3d(self.image)
+
+    @abc.abstractmethod
+    def on_click(self, event: pygame.event.Event):
+        """Called when the button is clicked."""
+        pass
 
     def set_position(self, position: tuple[int, int]):
         """Set the position of the component."""
@@ -54,21 +62,6 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
         self.image = make_surface_rgba(surface)
 
-
-class BaseButton(BaseComponent):
-    """Component of the UI"""
-
-    is_down: bool
-
-    def __init__(self):
-        super().__init__()
-        self.is_down = False
-
-    @abc.abstractmethod
-    def on_click(self):
-        """Called when the button is clicked."""
-        pass
-
     def update(self, delta_time: float, events: list[pygame.event.Event]):
         """Update the component."""
         for event in events:
@@ -78,7 +71,7 @@ class BaseButton(BaseComponent):
             elif event.type == pygame.MOUSEBUTTONUP:
                 if self.is_down:
                     self.is_down = False
-                    self.on_click()
+                    self.on_click(event)
             elif event.type == pygame.MOUSEMOTION:
                 if self.is_down and not self.rect.collidepoint(event.pos):
                     self.is_down = False

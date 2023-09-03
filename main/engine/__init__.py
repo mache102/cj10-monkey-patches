@@ -146,7 +146,7 @@ class Engine:
 
 
 # TODO: Remove this
-class TestButton(components.BaseButton):
+class TestButton(components.BaseComponent):
     """A count button."""
 
     count: int = 0
@@ -175,7 +175,7 @@ class TestButton(components.BaseButton):
 
         self.set_surface(surface)
 
-    def on_click(self):
+    def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
         self.count += 1
         print(self.count)
