@@ -58,7 +58,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
         If rgba is True, the surface will be converted to an alpha surface.
         """
-        if surface.shape[:2] != self.size:
+        if len(surface.shape) != 3 or surface.shape[:2] != self.size:
             raise ValueError(f"Surface size {surface.shape[:2]} does not match component size {self.size}.")
 
         self.image = make_surface_rgba(surface)
@@ -79,16 +79,16 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
 
 def make_surface_rgba(array: numpy.typing.NDArray[numpy.uint8]):
-    """Returns a surface made from a [w, h, 4] numpy array with per-pixel alpha"""
+    """Returns the surface from a (w, h, 4) numpy array with per-pixel alpha"""
     shape = array.shape
     if len(shape) != 3 and shape[2] != 4:
-        raise ValueError("Array not RGBA")
+        raise ValueError("Array must be (w, h, 4) numpy array.")
 
     # Create a surface the same width and height as array and with per-pixel alpha.
     surface = pygame.Surface(shape[0:2], pygame.SRCALPHA, 32)
 
     # Copy the rgb part of array to the new surface.
-    pygame.pixelcopy.array_to_surface(surface, array[:, :, 0:3])
+    pygame.pixelcopy.array_to_surface(surface, array[:, :, :3])
 
     # Copy the alpha part of array to the surface using a pixels-alpha view of the surface.
     surface_alpha = numpy.array(surface.get_view('A'), copy=False)
