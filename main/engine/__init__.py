@@ -1,10 +1,10 @@
 import logging
 
-import numpy as np
 import pygame
 from pydantic import BaseModel, Field
 
 import main.engine.components as components
+import main.engine.text_rendering as text_rendering
 
 
 class EngineSettings(BaseModel):
@@ -132,7 +132,7 @@ class Engine:
         """Start the engine."""
         self.running = True
 
-        # Test
+        # TODO: Remove this, this is just for testing
         self.add_layer("test button", pygame.sprite.RenderUpdates())
         self.add_sprite("test button", TestButton())
 
@@ -145,7 +145,7 @@ class Engine:
         pygame.quit()
 
 
-# TODO: Remove this
+# TODO: Remove this, this is just for testing
 class TestButton(components.BaseComponent):
     """A count button."""
 
@@ -153,27 +153,30 @@ class TestButton(components.BaseComponent):
 
     def __init__(self):
         super().__init__()
-        self.set_size((200, 50))
+        # height, width
+        self.set_size((50, 200))
+
+        # y, x
         self.set_position((100, 100))
+
+        self.image = pygame.Surface(self.size[::-1], pygame.locals.SRCALPHA)
 
         self.render_text()
 
     def render_text(self):
         """Render the text."""
-        surface = np.ndarray((200, 50, 4), dtype=np.uint8)
-        surface.fill(255)
+        # Erase our image
+        self.image.fill((255, 255, 255))
 
-        # Use pygame text for testing
-        font = pygame.font.SysFont("Arial", 40)
-        text = font.render(str(self.count), True, (0, 0, 0)).convert_alpha()
-        text_surface = pygame.surfarray.pixels3d(text)
+        offset = text_rendering.width_of_rendered_text(str(self.count), scale=4)
 
-        # if alpha of text is 0, set text_surface of the pixel to 255, 255, 255
-        text_surface[pygame.surfarray.pixels_alpha(text)[:, :] == 0] = 255
-
-        surface[:text.get_width(), :text.get_height(), :3] = text_surface
-
-        self.set_surface(surface)
+        text_rendering.render_on_surface(
+            str(self.count),
+            self.image,
+            coords=(self.size[1] - offset, 10),
+            color=(0, 0, 0),
+            scale=4,
+        )
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
