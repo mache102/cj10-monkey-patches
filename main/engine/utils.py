@@ -1,3 +1,5 @@
+from typing import Iterable
+
 import numpy as np
 import pygame
 
@@ -31,3 +33,9 @@ def vec2d_swap_xy(vec: tuple[int, int]):
 def arr2d_swap_xy(arr: ImageArray):
     """Swap the x and y axes of a 2d numpy array."""
     return arr.swapaxes(0, 1)
+
+
+def flatten(iterable: Iterable[Iterable]) -> Iterable:
+    """Convert a list of lists into one chained list"""
+    for sub_iterable in iterable:
+        yield from sub_iterable
