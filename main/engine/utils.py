@@ -1,41 +1,34 @@
+from itertools import chain
 from typing import Iterable
 
 import numpy as np
 import pygame
 
-from main.typing import ImageArray
+from main.type_aliases import ImageArray
 
 
-def make_surface_rgba(array: ImageArray):
-    """Returns the surface from a (w, h, 4) numpy array with per-pixel alpha"""
+def make_surface_rgba(array: ImageArray, scale: int = 1):
+    """Returns the surface from a (w, h, 3 or 4) numpy array with per-pixel alpha, defaults to 255 if no alpha"""
     shape = array.shape
-    if len(shape) != 3 and shape[2] != 4:
-        raise ValueError("Array must be (w, h, 4) numpy array.")
+    if len(shape) != 3 or shape[2] not in (3, 4):
+        raise ValueError("Array must be (w, h, 3 or 4) numpy array.")
+
+    if scale != 1:
+        array = np.repeat(np.repeat(array, scale, 1), scale, 0)
 
     # Create a surface the same width and height as array and with per-pixel alpha.
-    surface = pygame.Surface(shape[0:2], pygame.SRCALPHA, 32)
+    surface = pygame.Surface(array.shape[0:2], pygame.SRCALPHA, 32)
 
     # Copy the rgb part of array to the new surface.
     pygame.pixelcopy.array_to_surface(surface, array[:, :, :3])
 
     # Copy the alpha part of array to the surface using a pixels-alpha view of the surface.
     surface_alpha = np.array(surface.get_view('A'), copy=False)
-    surface_alpha[:, :] = array[:, :, 3]
+    surface_alpha[:, :] = array[:, :, 3] if array.shape[-1] == 4 else 255
 
     return surface
 
 
-def vec2d_swap_xy(vec: tuple[int, int]):
-    """Swap the x and y components of a 2d vector."""
-    return vec[1], vec[0]
-
-
-def arr2d_swap_xy(arr: ImageArray):
-    """Swap the x and y axes of a 2d numpy array."""
-    return arr.swapaxes(0, 1)
-
-
 def flatten(iterable: Iterable[Iterable]) -> Iterable:
     """Convert a list of lists into one chained list"""
-    for sub_iterable in iterable:
-        yield from sub_iterable
+    yield from chain.from_iterable(iterable)

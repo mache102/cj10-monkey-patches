@@ -2,8 +2,8 @@ import abc
 
 import pygame
 
-from main.engine.utils import arr2d_swap_xy, make_surface_rgba
-from main.typing import ImageArray
+from main.engine.utils import make_surface_rgba
+from main.type_aliases import ImageArray
 
 
 class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
@@ -20,23 +20,23 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
     @property
     def position(self) -> tuple[int, int]:
-        """The (y, x) top left position of the component."""
-        return self.rect.y, self.rect.x
+        """The (x, y) top left position of the component."""
+        return self.rect.x, self.rect.y
 
     @property
     def size(self) -> tuple[int, int]:
-        """The (height, width) size of the component."""
-        return self.rect.height, self.rect.width
+        """The (width, height) size of the component."""
+        return self.rect.width, self.rect.height
 
     @property
     def center(self) -> tuple[int, int]:
-        """The (y, x) center position of the component."""
-        return self.position[1] + self.size[1] // 2, self.position[0] + self.size[0] // 2
+        """The (x, y) center position of the component."""
+        return self.position[0] + self.size[0] // 2, self.position[1] + self.size[1] // 2
 
     @property
     def surface(self) -> ImageArray:
         """The surface of the component."""
-        return arr2d_swap_xy(pygame.surfarray.pixels3d(self.image))
+        return pygame.surfarray.pixels3d(self.image)
 
     @abc.abstractmethod
     def on_click(self, event: pygame.event.Event):
@@ -44,14 +44,12 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         pass
 
     def set_position(self, position: tuple[int, int]):
-        """Set the (y, x) top left position of the component."""
-        self.rect.y = position[0]
-        self.rect.x = position[1]
+        """Set the (x, y) top left position of the component."""
+        self.rect.x, self.rect.y = position
 
     def set_size(self, size: tuple[int, int]):
-        """Set the (height, width) size of the component."""
-        self.rect.height = size[0]
-        self.rect.width = size[1]
+        """Set the (width, height) size of the component."""
+        self.rect.width, self.rect.height = size
 
     def set_surface(self, image_array: ImageArray):
         """
@@ -61,8 +59,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         """
         if len(image_array.shape) != 3 or image_array.shape[:2] != self.size:
             raise ValueError(f"Surface size {image_array.shape[:2]} does not match component size {self.size}.")
-
-        self.image = make_surface_rgba(arr2d_swap_xy(image_array))
+        self.image = make_surface_rgba(image_array)
 
     def update(self, delta_time: float, events: list[pygame.event.Event]):
         """Update the component."""
