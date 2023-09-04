@@ -25,6 +25,22 @@ def make_surface_rgba(array: ImageArray):
     return surface
 
 
+def merge_images(top: ImageArray, bottom: ImageArray) -> ImageArray:
+    """
+    Merge two images together by multiplying with alpha channel then summing.
+
+    `top` image will be placed on top of `bottom` image.
+    """
+    if top.shape != bottom.shape:
+        raise ValueError("Images must be the same shape.")
+
+    # Multiply top image by alpha channel
+    top[:, :, :3] *= top[:, :, 3:] / 255
+
+    # Sum the two images
+    return top + bottom
+
+
 def vec2d_swap_xy(vec: tuple[int, int]):
     """Swap the x and y components of a 2d vector."""
     return vec[1], vec[0]

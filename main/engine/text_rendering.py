@@ -7,6 +7,7 @@ import pygame.locals
 
 from main.data.asciifont import LETTER_ASCII as RAW_LETTER_ASCII
 from main.engine.utils import flatten
+from main.typing import ImageArray
 
 LETTER_ASCII = {}
 for letter, raw_data in RAW_LETTER_ASCII.items():
@@ -148,6 +149,12 @@ def render_to_surface(text: str, color: tuple[int, int, int] = (255, 0, 255), sc
     surface = pygame.Surface((rendered_array.shape[0]*scale, rendered_array.shape[1]*scale), pygame.locals.SRCALPHA)
     render_on_surface(text, surface, color=color, scale=scale)
     return surface
+
+
+def render_to_image_array(text: str, color: tuple[int, int, int] = (255, 0, 255), scale: int = 1) -> ImageArray:
+    """Render a given string onto a new image array using our ascii font"""
+    surface = render_to_surface(text, color=color, scale=scale)
+    return pygame.surfarray.pixels3d(surface)
 
 
 def render_letters(letters: list[str]) -> np.ndarray:
