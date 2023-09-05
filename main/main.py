@@ -6,6 +6,7 @@ from main.engine import Engine
 from main.engine.text_rendering import LETTER_ASCII
 
 # TODO: Remove this, this is just for testing
+from main.image_ops import get_img_arr
 from main.engine import components
 from main.engine import text_rendering
 
@@ -28,16 +29,17 @@ class TestButton(components.BaseComponent):
         # y, x
         self.set_position((100, 100))
 
-        self.image = pygame.Surface(self.size[::-1], pygame.locals.SRCALPHA)
-
         self.render_text()
 
     def render_text(self):
         """Render the text."""
         # Erase our image
-        self.image.fill((255, 255, 255))
+        import pathlib
+        button_image_path = pathlib.Path(__file__).resolve().parent / 'data' / 'button.png'
+        button_image = get_img_arr(button_image_path)
+        self.set_9_slice_surface(button_image, border=(4, 4, 4, 4), scale=4)
 
-        offset = text_rendering.width_of_rendered_text(str(self.count), scale=4)
+        offset = text_rendering.width_of_rendered_text(str(self.count), scale=4) + 4
 
         self.set_text(
             str(self.count),
