@@ -7,9 +7,7 @@ from PIL import Image
 # TODO: Remove this, this is just for testing
 from main.engine import Engine, components, text_rendering
 from main.engine.text_rendering import LETTER_ASCII
-from main.image_ops import (
-    conv_img_arr_to_tile, conv_pil_to_numpy, flip_tiles, rotate_tiles
-)
+from main.image_ops import conv_pil_to_numpy, flip_tiles, rotate_tiles
 
 logging.basicConfig()
 
@@ -82,15 +80,12 @@ if __name__ == "__main__":
 
     logo_png = Image.open(Path(__file__).parent / 'data/Images/pydis_logo.png')
     img_arr = conv_pil_to_numpy(logo_png)
-    logo = components.Image(img_arr, (454, test_text.rect.height + 54))
+    logo = components.ImageSprite(img_arr, 100, (454, test_text.rect.height + 54))
     engine.add_sprite("test-widgets", logo)
 
-    # Test img ops
-    # Remember to delete the arrays after
-    surface_arr = pygame.surfarray.pixels3d(logo.image)
-    tile_arr = conv_img_arr_to_tile(surface_arr, 100)
-    rotate_tiles(tile_arr, (0, 0), (0, 1), rotation=90)
-    flip_tiles(tile_arr, (1, 0), axis='horizontal')
-    del surface_arr, tile_arr
+    cycle_button = components.CycleButton((100, 300), (400, 50), flip_tiles, rotate_tiles)
+    # other_cycle_button = components.CycleButton((100, 500), (200, 50))
+    logo.cycle_button = cycle_button
+    engine.add_sprite("test-widgets", cycle_button)
 
     engine.mainloop()

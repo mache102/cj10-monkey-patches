@@ -1,9 +1,13 @@
 import abc
+from collections import deque
+from pathlib import Path
 
 import numpy as np
 import pygame
+from PIL import Image
 
 from main.engine import text_rendering, utils
+from main.image_ops import conv_img_arr_to_tile, conv_pil_to_numpy
 from main.type_aliases import ImageArray
 
 
@@ -43,15 +47,12 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
-        pass
 
     def on_mouse_enter(self, event: pygame.event.Event):
         """Called when the mouse enters the component."""
-        pass
 
     def on_mouse_leave(self, event: pygame.event.Event):
         """Called when the mouse leaves the component."""
-        pass
 
     def set_position(self, position: tuple[int, int]):
         """Set the (x, y) top left position of the component."""
@@ -178,13 +179,56 @@ class Text(BaseComponent):
         self.rect.move_ip(position[1], position[0])
 
 
-class Image(BaseComponent):
+class ImageSprite(BaseComponent):
     """An image component"""
 
-    def __init__(self, image_array: ImageArray, position: tuple[int, int] = (0, 0)):
+    def __init__(self, image_array: ImageArray, tile_size: int, position: tuple[int, int] = (0, 0)):
         super().__init__()
 
         test_img = utils.make_surface_rgba(image_array, scale=1)
         self.image = test_img
+        self.tile_size = tile_size
+        self.cycle_button: CycleButton | None = None
         self.rect = test_img.get_rect()
         self.rect.move_ip(*position)
+
+    def on_click(self, event: pygame.event.Event):
+        """Apply an image operation on the image"""
+        surface_arr = pygame.surfarray.pixels3d(self.image)
+        tile_arr = conv_img_arr_to_tile(surface_arr, self.tile_size)
+        tile_x, tile_y = event.pos
+        x, y = self.position
+        tile_pos = (tile_x - x) // self.tile_size, (tile_y - y) // self.tile_size
+        self.cycle_button.selections[0](tile_arr, tile_pos)
+        del surface_arr, tile_arr
+
+
+class CycleButton(BaseComponent):
+    """A button for cycling through options"""
+
+    def __init__(self, position: tuple[int, int], size: tuple[int, int], *selections):
+        super().__init__()
+        self.set_position(position)
+        self.set_size(size)
+        self.selections = deque(selections)
+        self.render_text()
+
+    def render_text(self):
+        """Updates text"""
+        button_image_path = Image.open(Path(__file__).parent.parent / 'data' / 'Images' / 'button.png')
+        button_image = conv_pil_to_numpy(button_image_path)
+        self.set_9_slice_surface(button_image, border=(4, 4, 4, 4), scale=4)
+
+        text = self.selections[0].__name__.upper().replace('_', ' ')
+        offset = text_rendering.width_of_rendered_text(text, scale=4) + 4
+        self.set_text(
+            text,
+            position=(self.size[0] - offset, 10),
+            color=(0, 0, 0),
+            scale=4,
+        )
+
+    def on_click(self, event: pygame.event.Event):
+        """Called when the button is clicked."""
+        self.selections.rotate(-1)
+        self.render_text()
