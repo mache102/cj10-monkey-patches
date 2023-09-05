@@ -3,16 +3,13 @@ import logging
 import pygame
 from pydantic import BaseModel, Field
 
-import main.engine.components as components
-import main.engine.text_rendering as text_rendering
-
 
 class EngineSettings(BaseModel):
     """Settings for the engine."""
 
     fps: int = Field(60)
     display: int = Field(0)
-    vsync: bool = Field(True)
+    vsync: bool = Field(False)
 
 
 class Layer(pygame.sprite.RenderUpdates):
@@ -126,15 +123,12 @@ class Engine:
             self.logger.debug("Drawing layer %s", name)
             dirty_rects.extend(layer.draw(self.display))
 
+        pygame.display.update()
         return dirty_rects
 
     def mainloop(self):
         """Start the engine."""
         self.running = True
-
-        # TODO: Remove this, this is just for testing
-        self.add_layer("test button", pygame.sprite.RenderUpdates())
-        self.add_sprite("test button", TestButton())
 
         while self.running:
             self.update(pygame.event.get())
@@ -143,43 +137,3 @@ class Engine:
 
         del self.display
         pygame.quit()
-
-
-# TODO: Remove this, this is just for testing
-class TestButton(components.BaseComponent):
-    """A count button."""
-
-    count: int = 0
-
-    def __init__(self):
-        super().__init__()
-        # width, height
-        self.set_size((200, 50))
-
-        # x, y
-        self.set_position((200, 100))
-
-        self.image = pygame.Surface(self.size, pygame.locals.SRCALPHA)
-
-        self.render_text()
-
-    def render_text(self):
-        """Render the text."""
-        # Erase our image
-        self.image.fill((255, 255, 255))
-
-        offset = text_rendering.width_of_rendered_text(str(self.count), scale=4)
-
-        text_rendering.render_on_surface(
-            str(self.count),
-            self.image,
-            coords=(self.size[1] - offset, 10),
-            color=(0, 0, 0),
-            scale=4,
-        )
-
-    def on_click(self, event: pygame.event.Event):
-        """Called when the button is clicked."""
-        self.count += 1
-        print(self.count)
-        self.render_text()
