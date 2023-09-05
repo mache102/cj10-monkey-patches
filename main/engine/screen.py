@@ -2,10 +2,12 @@ from __future__ import annotations
 
 # For avoiding circular imports during type checking
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from main.engine import Engine
 
 import abc
+
 import pygame
 
 

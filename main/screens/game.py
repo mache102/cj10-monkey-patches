@@ -1,6 +1,12 @@
 import logging
+from pathlib import Path
+
 import pygame
-from main.engine import Engine, Screen, components
+from PIL import Image
+
+from main.engine import Engine, Screen, components, utils
+from main.image_ops import conv_pil_to_numpy
+from main.type_aliases import ImageArray
 
 
 class FlipButton(components.LabeledButton):
@@ -56,6 +62,9 @@ class GameScreen(Screen):
     swap_button: SwapButton
     filter_button: FilterButton
 
+    img_arr: ImageArray
+    image: components.Image
+
     SCALE: int = 4
 
     def on_init(self, engine: Engine):
@@ -63,6 +72,7 @@ class GameScreen(Screen):
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing game screen")
 
+        # Buttons
         engine.add_layer("buttons", pygame.sprite.RenderUpdates())
 
         self.flip_button = FlipButton()
@@ -74,6 +84,15 @@ class GameScreen(Screen):
         engine.add_sprite("buttons", self.rotate_button)
         engine.add_sprite("buttons", self.swap_button)
         engine.add_sprite("buttons", self.filter_button)
+
+        # Image
+        engine.add_layer("image", pygame.sprite.RenderUpdates())
+
+        logo_png = Image.open(Path(__file__).parent.parent / 'data' / 'Images' / 'pydis_logo.png')
+        self.img_arr = conv_pil_to_numpy(logo_png)
+        self.image = components.Image(self.img_arr)
+
+        engine.add_sprite("image", self.image)
 
         self.size_components(engine.display.get_size())
 
@@ -96,7 +115,9 @@ class GameScreen(Screen):
         Specifications:
         - The buttons are in a row at the bottom of the screen,
           with a 16px margin between them, and 16px from the edge of the screen.
+        - The image is centered above the buttons, with a 16px margin between them.
         """
+        # Buttons
         self.flip_button.set_position((16, size[1] - 16 - self.flip_button.size[1]))
         self.rotate_button.set_position((
             self.flip_button.position[0] + self.flip_button.size[0] + 16,
@@ -111,5 +132,27 @@ class GameScreen(Screen):
             size[1] - 16 - self.filter_button.size[1]
         ))
 
+        # Image
+        buttons_row_size = self.flip_button.size[0] + 16\
+            + self.rotate_button.size[0] + 16\
+            + self.swap_button.size[0] + 16\
+            + self.filter_button.size[0]
+
+        img_side_size = buttons_row_size
+        max_height = size[1] - 16 - self.flip_button.size[1] - 16 - 16
+        if max_height < img_side_size:
+            img_side_size = max_height
+
+        target_image = utils.stretch_arr(self.img_arr, (img_side_size, img_side_size))
+        print(img_side_size, buttons_row_size)
+        self.image.set_size((img_side_size, img_side_size))
+        self.image.set_surface(target_image)
+        print(self.image.rect)
+
+        position = (
+            (16 + buttons_row_size + 16 - img_side_size) // 2,
+            (size[1] - 16 - self.flip_button.size[1] - 16 - img_side_size) // 2,
+        )
+        self.image.set_position(position)
 
         self.logger.info("Updated components dimensions")

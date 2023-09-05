@@ -1,6 +1,7 @@
 import logging
-import pygame
 from pathlib import Path
+
+import pygame
 from PIL import Image
 
 from main.engine import Engine, Screen, components, text_rendering

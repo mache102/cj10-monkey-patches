@@ -1,8 +1,10 @@
 import logging
 
 import pygame
+
 from main.engine import Engine
-from main.screens import TestScreen, GameScreen
+from main.screens.game import GameScreen
+from main.screens.test import TestScreen
 
 logging.basicConfig()
 

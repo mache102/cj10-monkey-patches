@@ -2,7 +2,8 @@ import logging
 
 import pygame
 from pydantic import BaseModel, Field
-from main.engine.screen import ScreenManager, Screen
+
+from main.engine.screen import Screen, ScreenManager
 
 
 class EngineSettings(BaseModel):

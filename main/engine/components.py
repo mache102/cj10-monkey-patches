@@ -1,12 +1,12 @@
 import abc
+from pathlib import Path
 
 import numpy as np
 import pygame
 from PIL import Image as PILImage
-from pathlib import Path
-from main.image_ops import conv_pil_to_numpy
 
 from main.engine import text_rendering, utils
+from main.image_ops import conv_pil_to_numpy
 from main.type_aliases import ImageArray
 
 
