@@ -176,3 +176,15 @@ class Text(BaseComponent):
         self.image = text_surface
         self.rect = text_surface.get_rect()
         self.rect.move_ip(position[1], position[0])
+
+
+class Image(BaseComponent):
+    """An image component"""
+
+    def __init__(self, image_array: ImageArray, position: tuple[int, int] = (0, 0)):
+        super().__init__()
+
+        test_img = utils.make_surface_rgba(image_array, scale=1)
+        self.image = test_img
+        self.rect = test_img.get_rect()
+        self.rect.move_ip(*position)
