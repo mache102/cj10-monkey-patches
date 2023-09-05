@@ -6,8 +6,8 @@ import pygame
 import pygame.locals
 
 from main.data.asciifont import LETTER_ASCII as RAW_LETTER_ASCII
-from main.engine.utils import flatten
-from main.typing import ImageArray
+from main.engine import utils
+from main.type_aliases import ImageArray
 
 LETTER_ASCII = {}
 for letter, raw_data in RAW_LETTER_ASCII.items():
@@ -161,7 +161,7 @@ def render_letters(letters: list[str]) -> np.ndarray:
     """Render a list of letters to a numpy array of bool pixels."""
     spacing_array = np.zeros((LETTER_SPACING, LINE_HEIGHT), dtype=np.bool_)
 
-    letter_arrays = list(flatten((LETTER_NDARRAYS[letter], spacing_array) for letter in letters))
+    letter_arrays = list(utils.flatten((LETTER_NDARRAYS[letter], spacing_array) for letter in letters))
 
     render_array = np.concatenate(letter_arrays, axis=0, dtype=np.bool_)
 

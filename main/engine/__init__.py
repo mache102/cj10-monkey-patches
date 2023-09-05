@@ -61,7 +61,7 @@ class Engine:
     @property
     def layers(self) -> list[tuple[str, Layer]]:
         """A list of (name, layer) for the engine's render layers in priority sorted order"""
-        return list(sorted(self._layers.items(), key=lambda item: item[1].priority))
+        return sorted(self._layers.items(), key=lambda item: item[1].priority)
 
     def add_layer(
         self,

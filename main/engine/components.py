@@ -3,9 +3,9 @@ import abc
 import numpy as np
 import pygame
 
+from main.type_aliases import ImageArray
 from main.engine import text_rendering
 from main.engine import utils
-from main.typing import ImageArray
 
 
 class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
@@ -22,18 +22,18 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
     @property
     def position(self) -> tuple[int, int]:
-        """The (y, x) top left position of the component."""
-        return self.rect.y, self.rect.x
+        """The (x, y) top left position of the component."""
+        return self.rect.x, self.rect.y
 
     @property
     def size(self) -> tuple[int, int]:
-        """The (height, width) size of the component."""
-        return self.rect.height, self.rect.width
+        """The (width, height) size of the component."""
+        return self.rect.width, self.rect.height
 
     @property
     def center(self) -> tuple[int, int]:
-        """The (y, x) center position of the component."""
-        return self.position[1] + self.size[1] // 2, self.position[0] + self.size[0] // 2
+        """The (x, y) center position of the component."""
+        return self.position[0] + self.size[0] // 2, self.position[1] + self.size[1] // 2
 
     @property
     def surface(self) -> ImageArray:
@@ -45,18 +45,16 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         pass
 
     def set_position(self, position: tuple[int, int]):
-        """Set the (y, x) top left position of the component."""
-        self.rect.y = position[0]
-        self.rect.x = position[1]
+        """Set the (x, y) top left position of the component."""
+        self.rect.x, self.rect.y = position
 
     def set_size(self, size: tuple[int, int]):
-        """Set the (height, width) size of the component."""
-        self.rect.height = size[0]
-        self.rect.width = size[1]
+        """Set the (width, height) size of the component."""
+        self.rect.width, self.rect.height = size
 
     def set_surface(self, image_array: ImageArray, stretch_to_fit: bool = False):
         """
-        Set the surface of the component with an array of shape (height, width, 4).
+        Set the surface of the component with an array of shape (width, height, 4).
 
         If stretch_to_fit is True, the image will be stretched to fit the component size.
         """
@@ -71,7 +69,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         """
         Use a 9-slice algorithm to create a surface from an image array.
 
-        The image array should have a shape of (height, width, 4).
+        The image array should have a shape of (width, height, 4).
 
         The border should be a tuple of (top, right, bottom, left) border sizes.
         """
@@ -79,47 +77,37 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         image_array = utils.scale_arr(image_array, scale)
         border = tuple(b * scale for b in border)
 
-        # Slice
-        top_left = image_array[:border[0], :border[3]]
-        top_right = image_array[:border[0], -border[1]:]
-        bottom_left = image_array[-border[2]:, :border[3]]
-        bottom_right = image_array[-border[2]:, -border[1]:]
+        # Slice with the border of (top, right, bottom, left)
+        top, right, bottom, left = border
+        top_left = image_array[:left, :top]
+        top_right = image_array[-right:, :top]
+        bottom_left = image_array[:left, -bottom:]
+        bottom_right = image_array[-right:, -bottom:]
+        top_center = image_array[left:-right, :top]
+        bottom_center = image_array[left:-right, -bottom:]
+        left_center = image_array[:left, top:-bottom]
+        right_center = image_array[-right:, top:-bottom]
+        center = image_array[left:-right, top:-bottom]
 
-        top = image_array[:border[0], border[3]:-border[1]]
-        bottom = image_array[-border[2]:, border[3]:-border[1]]
-        left = image_array[border[0]:-border[2], :border[3]]
-        right = image_array[border[0]:-border[2], -border[1]:]
+        # Stretch to fit
+        top_center = utils.stretch_arr(top_center, (self.size[0] - left - right, top))
+        bottom_center = utils.stretch_arr(bottom_center, (self.size[0] - left - right, bottom))
+        left_center = utils.stretch_arr(left_center, (left, self.size[1] - top - bottom))
+        right_center = utils.stretch_arr(right_center, (right, self.size[1] - top - bottom))
+        center = utils.stretch_arr(center, (self.size[0] - left - right, self.size[1] - top - bottom))
 
-        center = image_array[border[0]:-border[2], border[3]:-border[1]]
-
-        # Stretch top and bottom to fill self.size - border[1] - border[3]
-        top = utils.stretch_arr(top, (border[0], self.size[1] - border[1] - border[3]))
-        bottom = utils.stretch_arr(bottom, (border[2], self.size[1] - border[1] - border[3]))
-
-        # Stretch left and right to fill self.size - border[0] - border[2]
-        left = utils.stretch_arr(left, (self.size[0] - border[0] - border[2], border[3]))
-        right = utils.stretch_arr(right, (self.size[0] - border[0] - border[2], border[1]))
-
-        # Stretch center to fill self.size - border[0] - border[2], border[3] - border[1]
-        center = utils.stretch_arr(
-            center,
-            (self.size[0] - border[0] - border[2], self.size[1] - border[1] - border[3]),
-        )
-
-        # Create the image array
+        # Merge
         new_image = np.zeros((*self.size, 4), dtype=np.uint8)
 
-        new_image[:border[0], :border[3]] = top_left
-        new_image[:border[0], -border[1]:] = top_right
-        new_image[-border[2]:, :border[3]] = bottom_left
-        new_image[-border[2]:, -border[1]:] = bottom_right
-
-        new_image[:border[0], border[3]:-border[1]] = top
-        new_image[-border[2]:, border[3]:-border[1]] = bottom
-        new_image[border[0]:-border[2], :border[3]] = left
-        new_image[border[0]:-border[2], -border[1]:] = right
-
-        new_image[border[0]:-border[2], border[3]:-border[1]] = center
+        new_image[:left, :top] = top_left
+        new_image[-right:, :top] = top_right
+        new_image[:left, -bottom:] = bottom_left
+        new_image[-right:, -bottom:] = bottom_right
+        new_image[left:-right, :top] = top_center
+        new_image[left:-right, -bottom:] = bottom_center
+        new_image[:left, top:-bottom] = left_center
+        new_image[-right:, top:-bottom] = right_center
+        new_image[left:-right, top:-bottom] = center
 
         self.set_surface(new_image)
 
@@ -134,7 +122,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         text_rendering.render_on_surface(
             text,
             self.image,
-            coords=(position[1], position[0]),
+            coords=position,
             color=color,
             scale=scale,
         )

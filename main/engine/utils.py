@@ -1,27 +1,29 @@
+from itertools import chain
 from typing import Iterable
 
 import numpy as np
 import pygame
 
-from main.typing import ImageArray
+from main.type_aliases import ImageArray
 
 
-def make_surface_rgba(array: ImageArray) -> pygame.Surface:
+def make_surface_rgba(array: ImageArray, scale: int = 1) -> pygame.Surface:
     """Returns the surface from a (w, h, 4) numpy array with per-pixel alpha"""
-    array = arr2d_swap_xy(array)
     shape = array.shape
-    if len(shape) != 3 and shape[2] != 4:
-        raise ValueError("Array must be (w, h, 4) numpy array.")
+    if len(shape) != 3 or shape[2] not in (3, 4):
+        raise ValueError("Array must be (w, h, 3 or 4) numpy array.")
+
+    scale_arr(array, scale)
 
     # Create a surface the same width and height as array and with per-pixel alpha.
-    surface = pygame.Surface(shape[0:2], pygame.SRCALPHA, 32)
+    surface = pygame.Surface(array.shape[0:2], pygame.SRCALPHA, 32)
 
     # Copy the rgb part of array to the new surface.
     pygame.pixelcopy.array_to_surface(surface, array[:, :, :3])
 
     # Copy the alpha part of array to the surface using a pixels-alpha view of the surface.
     surface_alpha = np.array(surface.get_view('A'), copy=False)
-    surface_alpha[:, :] = array[:, :, 3]
+    surface_alpha[:, :] = array[:, :, 3] if array.shape[-1] == 4 else 255
 
     return surface
 
@@ -40,7 +42,6 @@ def make_image_rgba(surface: pygame.Surface) -> ImageArray:
     surface_alpha = np.array(surface.get_view('A'), copy=False)
     array[:, :, 3] = surface_alpha
 
-    array = arr2d_swap_xy(array)
     return array
 
 
@@ -72,12 +73,11 @@ def arr2d_swap_xy(arr: ImageArray):
 
 def flatten(iterable: Iterable[Iterable]) -> Iterable:
     """Convert a list of lists into one chained list"""
-    for sub_iterable in iterable:
-        yield from sub_iterable
+    yield from chain.from_iterable(iterable)
 
 
 def scale_arr(array: ImageArray, scale: int) -> ImageArray:
-    """Scales an array by a given factor."""
+    """Scales an array uniformly on x y axis by a given factor."""
     return np.repeat(np.repeat(array, scale, axis=0), scale, axis=1)
 
 
@@ -85,9 +85,9 @@ def stretch_arr(array: ImageArray, new_size: tuple[int, int]) -> ImageArray:
     """
     Stretches an array to a new size.
 
-    The new size should be a tuple of (height, width).
+    The new size should be a tuple of (width, height).
     """
     # Kind of a cheat by using pygame
     surface = make_surface_rgba(array)
-    surface = pygame.transform.scale(surface, (new_size[1], new_size[0]))
+    surface = pygame.transform.scale(surface, new_size)
     return make_image_rgba(surface)

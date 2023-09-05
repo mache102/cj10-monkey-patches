@@ -1,15 +1,14 @@
-from pathlib import Path
 from typing import Literal, NoReturn
 
 import numpy as np
 from PIL import Image
 
-from .typing import ImageArray, TileArray
+from .type_aliases import ImageArray, TileArray
 
 
-def get_img_arr(image_path: Path) -> ImageArray:
-    """Get the image data from the specified path and put it into a numpy array"""
-    return np.array(Image.open(image_path))
+def conv_pil_to_numpy(img: Image) -> ImageArray:
+    """Convert pillow image to a numpy array of (width, height)"""
+    return np.array(img).swapaxes(0, 1)
 
 
 def conv_img_arr_to_tile(image_arr: ImageArray, tile_size: int) -> TileArray:
@@ -18,15 +17,15 @@ def conv_img_arr_to_tile(image_arr: ImageArray, tile_size: int) -> TileArray:
 
     Note: Tiles should be square
     """
-    height, width, channel_count = image_arr.shape
+    width, height, channel_count = image_arr.shape
     # Check that the tile dimensions fit the image
-    if height % tile_size or width % tile_size:
+    if width % tile_size or height % tile_size:
         raise ValueError(
             f'Tile of size {tile_size} does not fit with image of shape {(width, height)}'
         )
     return image_arr.reshape(
-        height // tile_size, tile_size,
         width // tile_size, tile_size,
+        height // tile_size, tile_size,
         channel_count
     ).swapaxes(1, 2)
 
@@ -34,11 +33,7 @@ def conv_img_arr_to_tile(image_arr: ImageArray, tile_size: int) -> TileArray:
 def rotate_tiles(tile_arr: TileArray,
                  *tile_pos: tuple[int, int],
                  rotation: Literal[90, 180, 270] = 90) -> NoReturn:
-    """
-    Rotates tiles by rotation degrees counter-clockwise
-
-    Tile positions are given by (row index, column index)
-    """
+    """Rotates tiles by rotation degrees counter-clockwise"""
     *indices, = zip(*tile_pos)
     # tile_arr[*indices] is an array of tiles,
     # so axes=(1, 2) ensures that the tiles are being rotated
@@ -48,10 +43,10 @@ def rotate_tiles(tile_arr: TileArray,
 def flip_tiles(tile_arr: TileArray,
                *tile_pos: tuple[int, int],
                axis: Literal['horizontal', 'vertical'] = 'horizontal') -> NoReturn:
-    """
-    Flips tiles either horizontally or vertically
-
-    Tile positions are given by (row index, column index)
-    """
+    """Flips tiles either horizontally or vertically"""
     *indices, = zip(*tile_pos)
     tile_arr[*indices] = np.flip(tile_arr[*indices], axis=1 if axis == 'vertical' else 2)
+
+
+if __name__ == '__main__':
+    pass
