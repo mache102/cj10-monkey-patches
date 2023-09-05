@@ -64,7 +64,7 @@ class Engine:
     @property
     def layers(self) -> list[tuple[str, Layer]]:
         """A list of (name, layer) for the engine's render layers in priority sorted order"""
-        return list(sorted(self._layers.items(), key=lambda item: item[1].priority))
+        return sorted(self._layers.items(), key=lambda item: item[1].priority)
 
     def add_layer(
         self,
@@ -153,13 +153,13 @@ class TestButton(components.BaseComponent):
 
     def __init__(self):
         super().__init__()
-        # height, width
-        self.set_size((50, 200))
+        # width, height
+        self.set_size((200, 50))
 
-        # y, x
-        self.set_position((100, 100))
+        # x, y
+        self.set_position((200, 100))
 
-        self.image = pygame.Surface(self.size[::-1], pygame.locals.SRCALPHA)
+        self.image = pygame.Surface(self.size, pygame.locals.SRCALPHA)
 
         self.render_text()
 
