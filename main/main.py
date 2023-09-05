@@ -7,7 +7,6 @@ from PIL import Image
 # TODO: Remove this, this is just for testing
 from main.engine import Engine, components, text_rendering
 from main.engine.text_rendering import LETTER_ASCII
-from main.engine.utils import make_surface_rgba
 from main.image_ops import (
     conv_img_arr_to_tile, conv_pil_to_numpy, flip_tiles, rotate_tiles
 )
@@ -83,16 +82,12 @@ if __name__ == "__main__":
 
     logo_png = Image.open(Path(__file__).parent / 'data/Images/pydis_logo.png')
     img_arr = conv_pil_to_numpy(logo_png)
-    test_img = make_surface_rgba(img_arr, scale=1)
-    img_sprite = pygame.sprite.DirtySprite()
-    img_sprite.image = test_img
-    img_sprite.rect = test_img.get_rect()
-    img_sprite.rect.move_ip(454, test_text.rect.height + 54)
-    engine.add_sprite("test-widgets", img_sprite)
+    logo = components.Image(img_arr, (454, test_text.rect.height + 54))
+    engine.add_sprite("test-widgets", logo)
 
     # Test img ops
     # Remember to delete the arrays after
-    surface_arr = pygame.surfarray.pixels3d(img_sprite.image)
+    surface_arr = pygame.surfarray.pixels3d(logo.image)
     tile_arr = conv_img_arr_to_tile(surface_arr, 100)
     rotate_tiles(tile_arr, (0, 0), (0, 1), rotation=90)
     flip_tiles(tile_arr, (1, 0), axis='horizontal')
