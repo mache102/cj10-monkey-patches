@@ -4,12 +4,9 @@ from pathlib import Path
 import pygame
 from PIL import Image
 
-from main.engine import Engine
-from main.engine.text_rendering import LETTER_ASCII
-
 # TODO: Remove this, this is just for testing
-from main.engine import components
-from main.engine import text_rendering
+from main.engine import Engine, components, text_rendering
+from main.engine.text_rendering import LETTER_ASCII
 from main.engine.utils import make_surface_rgba
 from main.image_ops import (
     conv_img_arr_to_tile, conv_pil_to_numpy, flip_tiles, rotate_tiles

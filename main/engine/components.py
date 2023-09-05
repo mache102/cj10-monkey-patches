@@ -3,9 +3,8 @@ import abc
 import numpy as np
 import pygame
 
+from main.engine import text_rendering, utils
 from main.type_aliases import ImageArray
-from main.engine import text_rendering
-from main.engine import utils
 
 
 class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
