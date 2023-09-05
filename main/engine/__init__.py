@@ -2,6 +2,7 @@ import logging
 
 import pygame
 from pydantic import BaseModel, Field
+from main.engine.screen import ScreenManager, Screen
 
 
 class EngineSettings(BaseModel):
@@ -32,6 +33,7 @@ class Engine:
     settings: EngineSettings
 
     _layers: dict[str, Layer]  # name: layer
+    screen_man: ScreenManager
 
     def __init__(self, settings: EngineSettings = EngineSettings()):
         self.logger = logging.getLogger(__name__)
@@ -57,6 +59,7 @@ class Engine:
         self.clock = pygame.time.Clock()
 
         self._layers = {}
+        self.screen_man = ScreenManager()
 
     @property
     def layers(self) -> list[tuple[str, Layer]]:
@@ -110,6 +113,9 @@ class Engine:
                 self.running = False
 
         delta_time = self.clock.tick(self.settings.fps) / 1000  # in seconds
+
+        self.screen_man.get_curr_screen().on_event(self, delta_time, events)
+
         for name, layer in self.layers:
             self.logger.debug("Updating layer %s", name)
             layer.update(delta_time, events)
@@ -126,14 +132,33 @@ class Engine:
         pygame.display.update()
         return dirty_rects
 
-    def mainloop(self):
+    def set_screen(self, name: str):
+        """Set the screen"""
+        self.screen_man.set_screen(name)
+
+    def add_screen(self, name: str, screen: Screen):
+        """Add a screen"""
+        self.screen_man.add_screen(name, screen)
+
+    def mainloop(self, init_screen: str):
         """Start the engine."""
         self.running = True
+
+        # First screen init
+        self.screen_man.set_screen(init_screen)
+        self._layers.clear()
+        if self.screen_man.update(self):
+            self.logger.info(f"Updated screen to {repr(self.screen_man.curr_screen)}")
 
         while self.running:
             self.update(pygame.event.get())
             dirty_rects = self.draw()
             pygame.display.update(dirty_rects)
+
+            if self.screen_man.next_screen:
+                self._layers.clear()
+            if self.screen_man.update(self):
+                self.logger.info(f"Updated screen to {repr(self.screen_man.curr_screen)}")
 
         del self.display
         pygame.quit()
