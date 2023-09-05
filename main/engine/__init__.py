@@ -53,7 +53,7 @@ class Engine:
         window_size = (selected_display_size[0] / 3 * 2), (selected_display_size[1] / 3 * 2)
         self.logger.info("Creating a window with size %s", window_size)
 
-        self.display = pygame.display.set_mode(window_size, vsync=settings.vsync)
+        self.display = pygame.display.set_mode(window_size, flags=pygame.RESIZABLE, vsync=settings.vsync)
 
         # Do not pass fps here, as this clock is multi-use
         self.clock = pygame.time.Clock()
@@ -111,6 +111,10 @@ class Engine:
             self.logger.debug(event)
             if event.type == pygame.QUIT:
                 self.running = False
+            if event.type == pygame.VIDEORESIZE:
+                window_size = (event.w, event.h)
+                self.logger.info("Updating a window with size %s", window_size)
+                self.display = pygame.display.set_mode(window_size, flags=pygame.RESIZABLE, vsync=self.settings.vsync)
 
         delta_time = self.clock.tick(self.settings.fps) / 1000  # in seconds
 

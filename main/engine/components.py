@@ -2,6 +2,9 @@ import abc
 
 import numpy as np
 import pygame
+from PIL import Image as PILImage
+from pathlib import Path
+from main.image_ops import conv_pil_to_numpy
 
 from main.engine import text_rendering, utils
 from main.type_aliases import ImageArray
@@ -188,3 +191,40 @@ class Image(BaseComponent):
         self.image = test_img
         self.rect = test_img.get_rect()
         self.rect.move_ip(*position)
+
+
+button_image_path = PILImage.open(Path(__file__).parent.parent / 'data' / 'Images' / 'button.png')
+button_image = conv_pil_to_numpy(button_image_path)
+
+
+class LabeledButton(BaseComponent):
+    """A labeled button."""
+
+    def __init__(self, label: str, position: tuple[int, int] = (0, 0), size: tuple[int, int] = (200, 50)):
+        super().__init__()
+        # width, height
+        self.set_size((200, 50))
+
+        # x, y
+        self.set_position((100, 100))
+
+        self.label = label
+
+        self.render_text()
+
+    def render_text(self):
+        """Render the text."""
+        self.set_9_slice_surface(button_image, border=(4, 4, 4, 4), scale=4)
+
+        offset = text_rendering.width_of_rendered_text(self.label, scale=4)
+
+        self.set_text(
+            self.label,
+            position=((self.size[0] - offset) // 2, 10),
+            color=(0, 0, 0),
+            scale=4,
+        )
+
+    def on_click(self, event: pygame.event.Event):
+        """Called when the button is clicked."""
+        pass

@@ -17,7 +17,7 @@ class Screen(abc.ABC):
         """Called when the screen is initialized."""
         pass
 
-    def on_event(self, engine: Engine, delta_time: float, event: pygame.event.Event):
+    def on_event(self, engine: Engine, delta_time: float, events: list[pygame.event.Event]):
         """Called when an event occurs."""
         pass
 

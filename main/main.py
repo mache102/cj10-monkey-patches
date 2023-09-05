@@ -2,7 +2,7 @@ import logging
 
 import pygame
 from main.engine import Engine
-from main.screens import TestScreen
+from main.screens import TestScreen, GameScreen
 
 logging.basicConfig()
 
@@ -12,5 +12,6 @@ pygame.init()
 if __name__ == "__main__":
     engine = Engine()
     engine.add_screen("test", TestScreen())
+    engine.add_screen("game", GameScreen())
 
-    engine.mainloop(init_screen="test")
+    engine.mainloop(init_screen="game")
