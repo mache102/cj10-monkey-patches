@@ -12,6 +12,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
     """A sprite that can be drawn by the engine."""
 
     is_down: bool
+    is_hovered: bool
 
     def __init__(self):
         super().__init__()
@@ -19,6 +20,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         self.rect = self.image.get_rect()
 
         self.is_down = False
+        self.is_hovered = False
 
     @property
     def position(self) -> tuple[int, int]:
@@ -42,6 +44,14 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
+        pass
+
+    def on_mouse_enter(self, event: pygame.event.Event):
+        """Called when the mouse enters the component."""
+        pass
+
+    def on_mouse_leave(self, event: pygame.event.Event):
+        """Called when the mouse leaves the component."""
         pass
 
     def set_position(self, position: tuple[int, int]):
@@ -140,6 +150,15 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
             elif event.type == pygame.MOUSEMOTION:
                 if self.is_down and not self.rect.collidepoint(event.pos):
                     self.is_down = False
+
+                if self.rect.collidepoint(event.pos):
+                    if not self.is_hovered:
+                        self.is_hovered = True
+                        self.on_mouse_enter(event)
+                else:
+                    if self.is_hovered:
+                        self.is_hovered = False
+                        self.on_mouse_leave(event)
 
 
 class Text(BaseComponent):

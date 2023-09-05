@@ -58,6 +58,14 @@ class TestButton(components.BaseComponent):
         print(self.count)
         self.render_text()
 
+    def on_mouse_enter(self, event: pygame.event.Event):
+        """Called when the mouse enters the component."""
+        print("Mouse entered button")
+
+    def on_mouse_leave(self, event: pygame.event.Event):
+        """Called when the mouse leaves the component."""
+        print("Mouse left button")
+
 
 if __name__ == "__main__":
     engine = Engine()
