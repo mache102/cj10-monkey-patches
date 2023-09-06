@@ -48,6 +48,10 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         """Called when the button is clicked."""
         pass
 
+    def on_key_press(self, event: pygame.event.Event):
+        """Called when a key is pressed."""
+        pass
+
     def on_mouse_enter(self, event: pygame.event.Event):
         """Called when the mouse enters the component."""
         pass
@@ -142,13 +146,16 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
     def update(self, delta_time: float, events: list[pygame.event.Event]):
         """Update the component."""
         for event in events:
+            # mouse click
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.rect.collidepoint(event.pos):
                     self.is_down = True
+            # mouse click release
             elif event.type == pygame.MOUSEBUTTONUP:
                 if self.is_down:
                     self.is_down = False
                     self.on_click(event)
+            # mouse movement
             elif event.type == pygame.MOUSEMOTION:
                 if self.is_down and not self.rect.collidepoint(event.pos):
                     self.is_down = False
@@ -161,6 +168,9 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
                     if self.is_hovered:
                         self.is_hovered = False
                         self.on_mouse_leave(event)
+            # key press
+            elif event.type == pygame.KEYDOWN:
+                self.on_key_press(event)
 
 
 class Text(BaseComponent):
