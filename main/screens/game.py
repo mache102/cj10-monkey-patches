@@ -28,6 +28,8 @@ class ScrambledImage(components.BaseComponent):
 
     config: ScrambleConfig
     tile_arr: TileArray
+    # For swapping tiles
+    prev_tile: tuple[int, int]
     selected_tile: tuple[int, int]
     fit_size: tuple[int, int]
 
@@ -39,12 +41,13 @@ class ScrambledImage(components.BaseComponent):
 
         self.config = scramble_config
 
-        # Open iamge array
+        # Open image array
         logo_png = Image.open(Path(__file__).parent.parent / 'data' / 'Images' / scramble_config.path)
         self.image_array = utils.add_alpha_to_arr(conv_pil_to_numpy(logo_png))
         self.fit_size = self.image_array.shape[:2]
 
         self.tile_arr = conv_img_arr_to_tile(self.image_array, self.config.tile_size)
+        self.prev_tile = (0, 0)
         self.selected_tile = (0, 0)
 
         self.update_surface()
@@ -56,6 +59,7 @@ class ScrambledImage(components.BaseComponent):
         local_pos = event.pos[0] - self.position[0], event.pos[1] - self.position[1]
 
         self.logger.debug(f"Clicked tile at local pos {local_pos}")
+        self.prev_tile = self.selected_tile
         self.selected_tile = self.get_tile_index(local_pos)
         self.logger.debug(f"Selected tile is {self.selected_tile}")
         self.update_surface()
@@ -179,7 +183,12 @@ class SwapButton(ImageOpButton):
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
-        print("Swapped")
+        prev_tile = self.scrambled_image.prev_tile
+        current_tile = self.scrambled_image.selected_tile
+        if prev_tile != current_tile:
+            image_ops.swap_tiles(self.scrambled_image.tile_arr, prev_tile, current_tile)
+            self.scrambled_image.update_surface()
+            print("Swapped")
 
 
 class FilterButton(ImageOpButton):
@@ -268,9 +277,9 @@ class GameScreen(Screen):
         engine.add_layer("image", pygame.sprite.RenderUpdates())
 
         scramble_config = ScrambleConfig(  # TODO: Use level configs
-            tile_size=100,
+            tile_size=50,
             path=Path("pydis_logo.png"),
-            outline_thickness=4,
+            outline_thickness=1,
             outline_color=(0, 0, 0, 255),
         )
         self.image = ScrambledImage(scramble_config)
