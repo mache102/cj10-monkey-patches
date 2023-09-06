@@ -54,11 +54,17 @@ def merge_images(top: ImageArray, bottom: ImageArray) -> ImageArray:
     if top.shape != bottom.shape:
         raise ValueError("Images must be the same shape.")
 
-    # Multiply top image by alpha channel
-    top[:, :, :3] *= top[:, :, 3:] / 255
+    alpha_bottom = bottom[:, :, 3] / 255.0
+    alpha_top = top[:, :, 3] / 255.0
 
-    # Sum the two images
-    return top + bottom
+    new_image = bottom.copy()
+
+    for color in range(3):
+        new_image[:, :, color] = alpha_top[:, :] * top[:, :, color]\
+            + alpha_bottom * bottom[:, :, color] * (1 - alpha_top)
+    new_image[:, :, 3] = (1 - (1 - alpha_top) * (1 - alpha_bottom)) * 255
+
+    return new_image
 
 
 def vec2d_swap_xy(vec: tuple[int, int]):
@@ -91,3 +97,28 @@ def stretch_arr(array: ImageArray, new_size: tuple[int, int]) -> ImageArray:
     surface = make_surface_rgba(array)
     surface = pygame.transform.scale(surface, new_size)
     return make_image_rgba(surface)
+
+
+def outline_rectangle(size: tuple[int, int], color: tuple[int, int, int, int], width: int = 1) -> ImageArray:
+    """
+    Returns a rectangle with an outline of a given color and width.
+
+    The size should be a tuple of (width, height).
+    """
+    # Create a numpy array
+    array = np.zeros((*size, 4), dtype=np.uint8)
+    array[:, :] = color
+
+    # Carve out the center
+    array[width:-width, width:-width] = (0, 0, 0, 0)
+
+    return array
+
+
+def add_alpha_to_arr(image_array: ImageArray) -> ImageArray:
+    """Add an alpha channel to an image array, if it does not already have one."""
+    if image_array.shape[-1] == 3:
+        alpha = np.full(image_array.shape[:-1] + (1,), 255, dtype=np.uint8)
+        image_array = np.concatenate((image_array, alpha), axis=-1)
+
+    return image_array

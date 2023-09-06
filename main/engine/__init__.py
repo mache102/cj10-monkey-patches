@@ -3,6 +3,8 @@ import logging
 import pygame
 from pydantic import BaseModel, Field
 
+from main.engine.screen import Screen, ScreenManager
+
 
 class EngineSettings(BaseModel):
     """Settings for the engine."""
@@ -29,9 +31,11 @@ class Engine:
     running: bool = False
     logger: logging.Logger
     clock: pygame.time.Clock
+    background_color: tuple[int, int, int]
     settings: EngineSettings
 
     _layers: dict[str, Layer]  # name: layer
+    screen_man: ScreenManager
 
     def __init__(self, settings: EngineSettings = EngineSettings()):
         self.logger = logging.getLogger(__name__)
@@ -51,12 +55,14 @@ class Engine:
         window_size = (selected_display_size[0] / 3 * 2), (selected_display_size[1] / 3 * 2)
         self.logger.info("Creating a window with size %s", window_size)
 
-        self.display = pygame.display.set_mode(window_size, vsync=settings.vsync)
+        self.display = pygame.display.set_mode(window_size, flags=pygame.RESIZABLE, vsync=settings.vsync)
 
         # Do not pass fps here, as this clock is multi-use
         self.clock = pygame.time.Clock()
 
+        self.background_color = (0, 255, 0)
         self._layers = {}
+        self.screen_man = ScreenManager()
 
     @property
     def layers(self) -> list[tuple[str, Layer]]:
@@ -108,15 +114,22 @@ class Engine:
             self.logger.debug(event)
             if event.type == pygame.QUIT:
                 self.running = False
+            if event.type == pygame.VIDEORESIZE:
+                window_size = (event.w, event.h)
+                self.logger.info("Updating a window with size %s", window_size)
+                self.display = pygame.display.set_mode(window_size, flags=pygame.RESIZABLE, vsync=self.settings.vsync)
 
         delta_time = self.clock.tick(self.settings.fps) / 1000  # in seconds
+
+        self.screen_man.get_curr_screen().on_event(self, delta_time, events)
+
         for name, layer in self.layers:
             self.logger.debug("Updating layer %s", name)
             layer.update(delta_time, events)
 
     def draw(self) -> list[pygame.Rect]:
         """Move all sprites and rerender all layers."""
-        self.display.fill((0, 255, 0))
+        self.display.fill(self.background_color)
 
         dirty_rects = []
         for name, layer in self.layers:
@@ -126,14 +139,33 @@ class Engine:
         pygame.display.update()
         return dirty_rects
 
-    def mainloop(self):
+    def set_screen(self, name: str):
+        """Set the screen"""
+        self.screen_man.set_screen(name)
+
+    def add_screen(self, name: str, screen: Screen):
+        """Add a screen"""
+        self.screen_man.add_screen(name, screen)
+
+    def mainloop(self, init_screen: str):
         """Start the engine."""
         self.running = True
+
+        # First screen init
+        self.screen_man.set_screen(init_screen)
+        self._layers.clear()
+        if self.screen_man.update(self):
+            self.logger.info(f"Updated screen to {repr(self.screen_man.curr_screen)}")
 
         while self.running:
             self.update(pygame.event.get())
             dirty_rects = self.draw()
             pygame.display.update(dirty_rects)
+
+            if self.screen_man.next_screen:
+                self._layers.clear()
+            if self.screen_man.update(self):
+                self.logger.info(f"Updated screen to {repr(self.screen_man.curr_screen)}")
 
         del self.display
         pygame.quit()
