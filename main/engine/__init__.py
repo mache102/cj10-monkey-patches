@@ -31,6 +31,7 @@ class Engine:
     running: bool = False
     logger: logging.Logger
     clock: pygame.time.Clock
+    background_color: tuple[int, int, int]
     settings: EngineSettings
 
     _layers: dict[str, Layer]  # name: layer
@@ -59,6 +60,7 @@ class Engine:
         # Do not pass fps here, as this clock is multi-use
         self.clock = pygame.time.Clock()
 
+        self.background_color = (0, 255, 0)
         self._layers = {}
         self.screen_man = ScreenManager()
 
@@ -127,7 +129,7 @@ class Engine:
 
     def draw(self) -> list[pygame.Rect]:
         """Move all sprites and rerender all layers."""
-        self.display.fill((0, 255, 0))
+        self.display.fill(self.background_color)
 
         dirty_rects = []
         for name, layer in self.layers:

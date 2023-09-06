@@ -194,7 +194,7 @@ class Image(BaseComponent):
 
 
 button_image_path = PILImage.open(Path(__file__).parent.parent / 'data' / 'Images' / 'button.png')
-button_image = conv_pil_to_numpy(button_image_path)
+button_image = utils.add_alpha_to_arr(conv_pil_to_numpy(button_image_path))
 
 
 class LabeledButton(BaseComponent):
@@ -203,10 +203,10 @@ class LabeledButton(BaseComponent):
     def __init__(self, label: str, position: tuple[int, int] = (0, 0), size: tuple[int, int] = (200, 50)):
         super().__init__()
         # width, height
-        self.set_size((200, 50))
+        self.set_size(size)
 
         # x, y
-        self.set_position((100, 100))
+        self.set_position(position)
 
         self.label = label
 

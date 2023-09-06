@@ -67,6 +67,7 @@ class TestScreen(Screen):
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing test screen")
 
+        engine.background_color = (0, 255, 0)
         engine.add_layer("test-widgets", pygame.sprite.RenderUpdates())
 
         test_text = components.Text(''.join(LETTER_ASCII))
