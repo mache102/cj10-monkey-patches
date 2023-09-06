@@ -60,32 +60,45 @@ class ScrambledImage(components.BaseComponent):
 
     def on_key_press(self, event: pygame.event.Event):
         """Tile selection with arrow keys."""
-        new_selected_tile = self.selected_tile  
+        new_selected_tile = self.selected_tile
 
         if event.key == pygame.K_LEFT:
-            self.logger.debug(f"Pressed LEFT key")
+            self.logger.debug("Pressed LEFT key")
             new_selected_tile = (self.selected_tile[0] - 1, self.selected_tile[1])
         elif event.key == pygame.K_RIGHT:
-            self.logger.debug(f"Pressed RIGHT key")
+            self.logger.debug("Pressed RIGHT key")
             new_selected_tile = (self.selected_tile[0] + 1, self.selected_tile[1])
         elif event.key == pygame.K_UP:
-            self.logger.debug(f"Pressed UP key")
+            self.logger.debug("Pressed UP key")
             new_selected_tile = (self.selected_tile[0], self.selected_tile[1] - 1)
         elif event.key == pygame.K_DOWN:
-            self.logger.debug(f"Pressed DOWN key")
+            self.logger.debug("Pressed DOWN key")
             new_selected_tile = (self.selected_tile[0], self.selected_tile[1] + 1)
 
-        # Check if the new selected tile is within bounds
-        rows, cols = self.image_array.shape[:2]
-        new_selected_tile = (
-            np.clip(new_selected_tile[0], 0, (rows // self.config.tile_size) - 1),
-            np.clip(new_selected_tile[1], 0, (cols // self.config.tile_size) - 1)
-        )
-        self.logger.debug(f"New selected tile: {new_selected_tile}")
+        # image operations
+        # q key
+        # elif event.key == pygame.K_q:
+        #     self.logger.debug(f"Pressed Q key")
+        #     image_ops.flip_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
+        #     self.scrambled_image.update_surface()
 
-        self.selected_tile = new_selected_tile
-        self.update_surface()
+        # elif event.key == pygame.K_w:
+        #     self.logger.debug(f"Pressed W key")
+        #     image_ops.rotate_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
+        #     self.scrambled_image.update_surface()
 
+        if not np.allclose(new_selected_tile, self.selected_tile):
+            # Check if the new selected tile is within bounds
+            rows, cols = self.image_array.shape[:2]
+            new_selected_tile = (
+                np.clip(new_selected_tile[0], 0, (rows // self.config.tile_size) - 1),
+                np.clip(new_selected_tile[1], 0, (cols // self.config.tile_size) - 1)
+            )
+
+            self.logger.debug(f"New selected tile: {new_selected_tile}")
+
+            self.selected_tile = new_selected_tile
+            self.update_surface()
 
     def get_tile_index(self, pos: tuple[int, int]) -> tuple[int, int]:
         """Get the index of the tile at the given local position."""
@@ -131,6 +144,12 @@ class FlipButton(ImageOpButton):
         image_ops.flip_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
         self.scrambled_image.update_surface()
 
+    def on_key_press(self, event: pygame.event.Event):
+        """Called when the keyboard shortcut is pressed."""
+        if event.key == pygame.K_q:
+            image_ops.flip_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
+            self.scrambled_image.update_surface()
+
 
 class RotateButton(ImageOpButton):
     """A rotate button."""
@@ -142,6 +161,12 @@ class RotateButton(ImageOpButton):
         """Called when the button is clicked."""
         image_ops.rotate_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
         self.scrambled_image.update_surface()
+
+    def on_key_press(self, event: pygame.event.Event):
+        """Called when the keyboard shortcut is pressed."""
+        if event.key == pygame.K_w:
+            image_ops.rotate_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
+            self.scrambled_image.update_surface()
 
 
 class SwapButton(ImageOpButton):
