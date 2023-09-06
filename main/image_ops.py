@@ -1,4 +1,4 @@
-from typing import Literal, NoReturn
+from typing import Literal
 
 import numpy as np
 from PIL import Image
@@ -30,9 +30,11 @@ def conv_img_arr_to_tile(image_arr: ImageArray, tile_size: int) -> TileArray:
     ).swapaxes(1, 2)
 
 
-def rotate_tiles(tile_arr: TileArray,
-                 *tile_pos: tuple[int, int],
-                 rotation: Literal[90, 180, 270] = 90) -> None:
+def rotate_tiles(
+    tile_arr: TileArray,
+    *tile_pos: tuple[int, int],
+    rotation: Literal[90, 180, 270] = 90,
+) -> None:
     """
     Rotates tiles by rotation degrees counter-clockwise
 
@@ -44,9 +46,11 @@ def rotate_tiles(tile_arr: TileArray,
     tile_arr[*indices] = np.rot90(tile_arr[*indices], k=rotation // 90, axes=(1, 2))
 
 
-def flip_tiles(tile_arr: TileArray,
-               *tile_pos: tuple[int, int],
-               axis: Literal['horizontal', 'vertical'] = 'horizontal') -> None:
+def flip_tiles(
+    tile_arr: TileArray,
+    *tile_pos: tuple[int, int],
+    axis: Literal['horizontal', 'vertical'] = 'horizontal',
+) -> None:
     """
     Flips tiles either horizontally or vertically
 
@@ -55,9 +59,12 @@ def flip_tiles(tile_arr: TileArray,
     *indices, = zip(*tile_pos)
     tile_arr[*indices] = np.flip(tile_arr[*indices], axis=1 if axis == 'vertical' else 2)
 
-def swap_tiles(tile_arr: TileArray,
-               tile1_pos: tuple[int, int],
-               tile2_pos: tuple[int, int]) -> None:
+
+def swap_tiles(
+    tile_arr: TileArray,
+    tile1_pos: tuple[int, int],
+    tile2_pos: tuple[int, int],
+) -> None:
     """
     Swaps the positions of two tiles
 
@@ -68,13 +75,14 @@ def swap_tiles(tile_arr: TileArray,
     tile_arr[tile2_pos] = temp_tile
 
 
-def apply_filter_to_tiles(tile_arr: TileArray,
-                         *tile_pos: tuple[int, int],
-                         grayscale: bool = False,
-                         filter_color: tuple[int, int, int],
-                         filter_strength: float = 1.0) -> None:
+def apply_filter_to_tiles(
+    tile_arr: TileArray,
+    *tile_pos: tuple[int, int],
+    grayscale: bool = False,
+    filter_color: tuple[int, int, int] = None,
+    filter_strength: float = 1.0,
+) -> None:
     """Applies a filter to a set of tiles"""
-
     if grayscale:
         # this ignores the filter color and strength
         *indices, = zip(*tile_pos)
@@ -84,7 +92,7 @@ def apply_filter_to_tiles(tile_arr: TileArray,
     # Im going for iteration here for readability
     for pos in tile_pos:
         tile = tile_arr[pos]
-        
+
         filtered_tile = tile + (np.array(filter_color) * filter_strength)
         filtered_tile = np.clip(filtered_tile, 0, 255)
         tile_arr[pos] = filtered_tile

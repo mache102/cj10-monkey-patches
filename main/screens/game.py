@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pygame
@@ -8,6 +9,7 @@ from pydantic import BaseModel
 
 from main import image_ops
 from main.engine import Engine, Screen, components, utils
+from main.engine.puzzle_generation import Puzzle, generate_puzzle
 from main.image_ops import conv_img_arr_to_tile, conv_pil_to_numpy
 from main.type_aliases import ImageArray, TileArray
 
@@ -132,6 +134,56 @@ class FilterButton(ImageOpButton):
         print("Filtered")
 
 
+class NewPuzzleButton(components.LabeledButton):
+    """Transitions from a solved puzzle to an unsolved puzzle, and solves the current one if unsolved."""
+
+    puzzle: Optional[Puzzle] = None
+    solving: bool = False
+    solving_animation_time: float = 0.
+    steps_remaining: list = None
+
+    TIME_PER_STEP = 0.25
+
+    def __init__(self, scrambled_image: ScrambledImage):
+        super().__init__("RESET", size=(200, 50))
+        self.scrambled_image = scrambled_image
+
+    def on_click(self, event: pygame.event.Event):
+        """Solve, then generate a new puzzle on click."""
+        if self.puzzle is not None and not self.solving:
+            # Reset puzzle to untouched, start animating solution
+            self.scrambled_image.tile_arr[:] = self.puzzle.puzzle_tiles
+            self.solving = True
+            self.steps_remaining = self.puzzle.puzzle_to_original
+            return
+
+        puzzle = generate_puzzle(
+            self.scrambled_image.tile_arr,
+            difficulty=2,
+        )
+        self.scrambled_image.update_surface()
+        self.puzzle = puzzle
+
+    def update(self, delta_time: float, events: list[pygame.event.Event]):
+        """Handle animating a puzzle solution."""
+        super().update(delta_time, events)
+
+        if self.solving:
+            self.solving_animation_time += delta_time
+            if self.solving_animation_time > self.TIME_PER_STEP:
+                step_function, *args = self.steps_remaining.pop(0)
+                if len(args) == 2:
+                    step_function(self.scrambled_image.tile_arr, *args[0], **args[1])
+                else:
+                    step_function(self.scrambled_image.tile_arr, *args[0])
+                self.scrambled_image.update_surface()
+                self.solving_animation_time = 0
+
+                if not self.steps_remaining:
+                    self.solving = False
+                    self.puzzle = None
+
+
 class GameScreen(Screen):
     """The game screen."""
 
@@ -142,6 +194,7 @@ class GameScreen(Screen):
     rotate_button: RotateButton
     swap_button: SwapButton
     filter_button: FilterButton
+    reset_button: NewPuzzleButton
 
     SCALE: int = 4
 
@@ -172,11 +225,13 @@ class GameScreen(Screen):
         self.rotate_button = RotateButton(self.image)
         self.swap_button = SwapButton(self.image)
         self.filter_button = FilterButton(self.image)
+        self.reset_button = NewPuzzleButton(self.image)
 
         engine.add_sprite("buttons", self.flip_button)
         engine.add_sprite("buttons", self.rotate_button)
         engine.add_sprite("buttons", self.swap_button)
         engine.add_sprite("buttons", self.filter_button)
+        engine.add_sprite("buttons", self.reset_button)
 
         self.size_components(engine.display.get_size())
 
@@ -215,12 +270,17 @@ class GameScreen(Screen):
             self.swap_button.position[0] + self.swap_button.size[0] + 16,
             size[1] - 16 - self.filter_button.size[1]
         ))
+        self.reset_button.set_position((
+            self.filter_button.position[0] + self.filter_button.size[0] + 16,
+            size[1] - 16 - self.reset_button.size[1]
+        ))
 
         # Image
         buttons_row_size = self.flip_button.size[0] + 16\
             + self.rotate_button.size[0] + 16\
             + self.swap_button.size[0] + 16\
-            + self.filter_button.size[0]
+            + self.filter_button.size[0] + 16\
+            + self.reset_button.size[0]
 
         img_side_size = buttons_row_size
         max_height = size[1] - 16 - self.flip_button.size[1] - 16 - 16
