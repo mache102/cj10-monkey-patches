@@ -31,6 +31,7 @@ class Engine:
     running: bool = False
     logger: logging.Logger
     clock: pygame.time.Clock
+    level: int | None
     background_color: tuple[int, int, int]
     settings: EngineSettings
 
@@ -60,6 +61,7 @@ class Engine:
         # Do not pass fps here, as this clock is multi-use
         self.clock = pygame.time.Clock()
 
+        self.level = None
         self.background_color = (0, 255, 0)
         self._layers = {}
         self.screen_man = ScreenManager()
