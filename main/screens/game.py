@@ -329,7 +329,7 @@ class GameScreen(Screen):
         Specifications:
         - The buttons are in a row at the bottom of the screen,
           with a 4px margin between them, and 4px from the edge of the screen.
-        - The image is centered above the buttons, with a 16px margin between them.
+        - The image is centered above the buttons, with a 4px margin between them.
         """
         margin = self.BUTTON_MARGIN * self.SCALE
 
