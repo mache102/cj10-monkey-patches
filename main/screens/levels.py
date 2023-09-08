@@ -54,7 +54,7 @@ class LevelsScreen(Screen):
         engine.background_color = (240, 240, 240)
 
         # Buttons
-        engine.add_layer("buttons", pygame.sprite.RenderUpdates())
+        engine.add_layer("buttons")
 
         self.level_buttons = []
         for level in range(self.LEVEL_COUNT):

@@ -281,7 +281,7 @@ class GameScreen(Screen):
         engine.background_color = (240, 240, 240)
 
         # Image
-        engine.add_layer("image", pygame.sprite.RenderUpdates())
+        engine.add_layer("image")
 
         scramble_config = ScrambleConfig(  # TODO: Use level configs
             tile_size=50,
@@ -294,7 +294,7 @@ class GameScreen(Screen):
         engine.add_sprite("image", self.image)
 
         # Buttons
-        engine.add_layer("buttons", pygame.sprite.RenderUpdates())
+        engine.add_layer("buttons")
 
         self.flip_button = FlipButton(self.SCALE, self.image)
         self.rotate_button = RotateButton(self.SCALE, self.image)
