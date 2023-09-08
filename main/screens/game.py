@@ -134,16 +134,22 @@ class ImageOpButton(components.LabeledButton):
 
     scrambled_image: ScrambledImage
 
-    def __init__(self, op_name: str, size: tuple[int, int], scrambled_image: ScrambledImage):
-        super().__init__(op_name, size=size)
+    def __init__(
+        self,
+        op_name: str,
+        scrambled_image: ScrambledImage,
+        scale: int = 1,
+        size: tuple[int, int] = (50, 12),
+    ):
+        super().__init__(op_name, scale=scale, size=size)
         self.scrambled_image = scrambled_image
 
 
 class FlipButton(ImageOpButton):
     """A flip button."""
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("FLIP", size=(200, 50), scrambled_image=scrambled_image)
+    def __init__(self, scale: int, scrambled_image: ScrambledImage):
+        super().__init__("FLIP", scale=scale, scrambled_image=scrambled_image)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
@@ -160,8 +166,8 @@ class FlipButton(ImageOpButton):
 class RotateButton(ImageOpButton):
     """A rotate button."""
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("ROTATE", size=(200, 50), scrambled_image=scrambled_image)
+    def __init__(self, scale: int, scrambled_image: ScrambledImage):
+        super().__init__("ROTATE", scale=scale, scrambled_image=scrambled_image)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
@@ -178,8 +184,8 @@ class RotateButton(ImageOpButton):
 class SwapButton(ImageOpButton):
     """A swap button."""
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("SWAP", size=(200, 50), scrambled_image=scrambled_image)
+    def __init__(self, scale: int, scrambled_image: ScrambledImage):
+        super().__init__("SWAP", scale=scale, scrambled_image=scrambled_image)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
@@ -194,8 +200,8 @@ class SwapButton(ImageOpButton):
 class FilterButton(ImageOpButton):
     """A filter button."""
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("FILTER", size=(200, 50), scrambled_image=scrambled_image)
+    def __init__(self, scale: int, scrambled_image: ScrambledImage):
+        super().__init__("FILTER", scale=scale, scrambled_image=scrambled_image)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
@@ -212,8 +218,8 @@ class NewPuzzleButton(components.LabeledButton):
 
     TIME_PER_STEP = 0.25
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("RESET", size=(200, 50))
+    def __init__(self, scale: int, scrambled_image: ScrambledImage):
+        super().__init__("RESET", scale=scale)
         self.scrambled_image = scrambled_image
 
     def on_click(self, event: pygame.event.Event):
@@ -264,7 +270,8 @@ class GameScreen(Screen):
     filter_button: FilterButton
     reset_button: NewPuzzleButton
 
-    SCALE: int = 4
+    SCALE: int = 3
+    BUTTON_MARGIN: int = 4
 
     def on_init(self, engine: Engine):
         """Called when the screen is initialized."""
@@ -289,11 +296,11 @@ class GameScreen(Screen):
         # Buttons
         engine.add_layer("buttons", pygame.sprite.RenderUpdates())
 
-        self.flip_button = FlipButton(self.image)
-        self.rotate_button = RotateButton(self.image)
-        self.swap_button = SwapButton(self.image)
-        self.filter_button = FilterButton(self.image)
-        self.reset_button = NewPuzzleButton(self.image)
+        self.flip_button = FlipButton(self.SCALE, self.image)
+        self.rotate_button = RotateButton(self.SCALE, self.image)
+        self.swap_button = SwapButton(self.SCALE, self.image)
+        self.filter_button = FilterButton(self.SCALE, self.image)
+        self.reset_button = NewPuzzleButton(self.SCALE, self.image)
 
         engine.add_sprite("buttons", self.flip_button)
         engine.add_sprite("buttons", self.rotate_button)
@@ -321,37 +328,39 @@ class GameScreen(Screen):
 
         Specifications:
         - The buttons are in a row at the bottom of the screen,
-          with a 16px margin between them, and 16px from the edge of the screen.
+          with a 4px margin between them, and 4px from the edge of the screen.
         - The image is centered above the buttons, with a 16px margin between them.
         """
+        margin = self.BUTTON_MARGIN * self.SCALE
+
         # Buttons
-        self.flip_button.set_position((16, size[1] - 16 - self.flip_button.size[1]))
+        self.flip_button.set_position((margin, size[1] - margin - self.flip_button.size[1]))
         self.rotate_button.set_position((
-            self.flip_button.position[0] + self.flip_button.size[0] + 16,
-            size[1] - 16 - self.rotate_button.size[1]
+            self.flip_button.position[0] + self.flip_button.size[0] + margin,
+            size[1] - margin - self.rotate_button.size[1]
         ))
         self.swap_button.set_position((
-            self.rotate_button.position[0] + self.rotate_button.size[0] + 16,
-            size[1] - 16 - self.swap_button.size[1]
+            self.rotate_button.position[0] + self.rotate_button.size[0] + margin,
+            size[1] - margin - self.swap_button.size[1]
         ))
         self.filter_button.set_position((
-            self.swap_button.position[0] + self.swap_button.size[0] + 16,
-            size[1] - 16 - self.filter_button.size[1]
+            self.swap_button.position[0] + self.swap_button.size[0] + margin,
+            size[1] - margin - self.filter_button.size[1]
         ))
         self.reset_button.set_position((
-            self.filter_button.position[0] + self.filter_button.size[0] + 16,
-            size[1] - 16 - self.reset_button.size[1]
+            self.filter_button.position[0] + self.filter_button.size[0] + margin,
+            size[1] - margin - self.reset_button.size[1]
         ))
 
         # Image
-        buttons_row_size = self.flip_button.size[0] + 16\
-            + self.rotate_button.size[0] + 16\
-            + self.swap_button.size[0] + 16\
-            + self.filter_button.size[0] + 16\
+        buttons_row_size = self.flip_button.size[0] + margin\
+            + self.rotate_button.size[0] + margin\
+            + self.swap_button.size[0] + margin\
+            + self.filter_button.size[0] + margin\
             + self.reset_button.size[0]
 
         img_side_size = buttons_row_size
-        max_height = size[1] - 16 - self.flip_button.size[1] - 16 - 16
+        max_height = size[1] - margin - self.flip_button.size[1] - margin - margin
         if max_height < img_side_size:
             img_side_size = max_height
 
@@ -359,8 +368,8 @@ class GameScreen(Screen):
         self.image.update_surface()
 
         position = (
-            (16 + buttons_row_size + 16 - img_side_size) // 2,
-            (size[1] - 16 - self.flip_button.size[1] - 16 - img_side_size) // 2,
+            (margin + buttons_row_size + margin - img_side_size) // 2,
+            (size[1] - margin - self.flip_button.size[1] - margin - img_side_size) // 2,
         )
         self.image.set_position(position)
 

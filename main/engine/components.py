@@ -15,6 +15,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
 
     is_down: bool
     is_hovered: bool
+    scale: float
 
     def __init__(self):
         super().__init__()
@@ -68,16 +69,18 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         """Set the (width, height) size of the component."""
         self.rect.width, self.rect.height = size
 
-    def set_surface(self, image_array: ImageArray, stretch_to_fit: bool = False):
+    def set_surface(self, image_array: ImageArray, scale: int = 1, stretch_to_fit: bool = False):
         """
         Set the surface of the component with an array of shape (width, height, 4).
 
         If stretch_to_fit is True, the image will be stretched to fit the component size.
+        It will also scale up the image_array with scale, so make sure image_array.shape * scale == self.size.
         """
+        scaled_image_size = image_array.shape[:2][0] * scale, image_array.shape[:2][1] * scale
         if stretch_to_fit:
             image_array = utils.scale_arr(image_array, self.size)
-        elif len(image_array.shape) != 3 or image_array.shape[:2] != self.size:
-            raise ValueError(f"Surface size {image_array.shape[:2]} does not match component size {self.size}.")
+        elif len(image_array.shape) != 3 or scaled_image_size != self.size:
+            raise ValueError(f"Surface size {scaled_image_size} does not match component size {self.size}.")
 
         self.image = utils.make_surface_rgba(image_array)
 
@@ -88,6 +91,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         The image array should have a shape of (width, height, 4).
 
         The border should be a tuple of (top, right, bottom, left) border sizes.
+        It will also scale up the image_array with scale, so make sure image_array.shape * scale == self.size.
         """
         # Scale the image and border
         image_array = utils.scale_arr(image_array, scale)
@@ -113,7 +117,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         center = utils.stretch_arr(center, (self.size[0] - left - right, self.size[1] - top - bottom))
 
         # Merge
-        new_image = np.zeros((*self.size, 4), dtype=np.uint8)
+        new_image = np.zeros((self.size[0], self.size[1], 4), dtype=np.uint8)
 
         new_image[:left, :top] = top_left
         new_image[-right:, :top] = top_right
@@ -132,7 +136,7 @@ class BaseComponent(abc.ABC, pygame.sprite.DirtySprite):
         text: str,
         position: tuple[int, int] = (0, 0),
         color: tuple[int, int, int] = (255, 0, 255),
-        scale: int = 3
+        scale: int = 1
     ):
         """Set the text on top of the component."""
         text_rendering.render_on_surface(
@@ -181,7 +185,7 @@ class Text(BaseComponent):
         text: str,
         position: tuple[int, int] = (0, 0),
         color: tuple[int, int, int] = (255, 0, 255),
-        scale: int = 3
+        scale: int = 1
     ):
         super().__init__()
 
@@ -210,29 +214,44 @@ button_image = utils.add_alpha_to_arr(conv_pil_to_numpy(button_image_path))
 class LabeledButton(BaseComponent):
     """A labeled button."""
 
-    def __init__(self, label: str, position: tuple[int, int] = (0, 0), size: tuple[int, int] = (200, 50)):
+    label: str
+    scale: int
+
+    def __init__(
+        self,
+        label: str,
+        scale: int = 1,
+        position: tuple[int, int] = (0, 0),
+        size: tuple[int, int] = (50, 12),
+    ):
         super().__init__()
         # width, height
-        self.set_size(size)
+        self.set_size((size[0] * scale, size[1] * scale))
 
         # x, y
         self.set_position(position)
 
         self.label = label
+        self.scale = scale
 
         self.render_text()
 
+    @property
+    def scaled_size(self) -> tuple[int, int]:
+        """The (width, height) size of the component, scaled by the scale."""
+        return self.size[0] * self.scale, self.size[1] * self.scale
+
     def render_text(self):
         """Render the text."""
-        self.set_9_slice_surface(button_image, border=(4, 4, 4, 4), scale=4)
+        self.set_9_slice_surface(button_image, border=(4, 4, 4, 4), scale=self.scale)
 
-        offset = text_rendering.width_of_rendered_text(self.label, scale=4)
+        offset = text_rendering.width_of_rendered_text(self.label, scale=self.scale)
 
         self.set_text(
             self.label,
-            position=((self.size[0] - offset) // 2, 10),
+            position=((self.size[0] - offset) // 2, 2 * self.scale),
             color=(0, 0, 0),
-            scale=4,
+            scale=self.scale,
         )
 
     def on_click(self, event: pygame.event.Event):
