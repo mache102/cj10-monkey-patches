@@ -241,6 +241,8 @@ class NewPuzzleButton(components.LabeledButton):
             self.scrambled_image.tile_arr[:] = self.puzzle.puzzle_tiles
             self.solving = True
             self.steps_remaining = self.puzzle.puzzle_to_original
+            self.label = "..."
+            self.render_text()
             return
 
         puzzle = generate_puzzle(
@@ -249,6 +251,8 @@ class NewPuzzleButton(components.LabeledButton):
         )
         self.scrambled_image.update_surface()
         self.puzzle = puzzle
+        self.label = "SOLVE"
+        self.render_text()
 
     def update(self, delta_time: float, events: list[pygame.event.Event]):
         """Handle animating a puzzle solution."""
@@ -269,6 +273,9 @@ class NewPuzzleButton(components.LabeledButton):
                     self.game.check_victory()  # debug
                     self.solving = False
                     self.puzzle = None
+                    self.label = "NEW PUZZLE"
+                    self.render_text()
+
 
 class FadingAnnouncement(components.Text):
     """Displays a textual announcement over the game that fades after some time."""
