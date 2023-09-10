@@ -82,7 +82,7 @@ class TestScreen(Screen):
 
         engine.add_sprite("test-widgets", TestButton())
 
-        logo_png = Image.open(Path(__file__).parent.parent / 'data/Images/pydis_logo.png')
+        logo_png = Image.open(Path(__file__).parent.parent / 'data/Images/puzzle0.png')
         img_arr = conv_pil_to_numpy(logo_png)
         logo = components.Image(img_arr, (454, test_text.rect.height + 54))
         engine.add_sprite("test-widgets", logo)
