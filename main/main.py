@@ -3,6 +3,7 @@ import logging
 import pygame
 
 from main.engine import Engine
+from main.screens.credits import CreditsScreen
 from main.screens.game import GameScreen
 from main.screens.levels import LevelsScreen
 from main.screens.main_menu import MainMenuScreen
@@ -22,5 +23,6 @@ if __name__ == "__main__":
     engine.add_screen("main_menu", MainMenuScreen())
     engine.add_screen("levels", LevelsScreen())
     engine.add_screen("game", GameScreen())
+    engine.add_screen("credits", CreditsScreen())
 
     engine.mainloop(init_screen="main_menu")

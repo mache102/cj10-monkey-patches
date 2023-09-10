@@ -32,15 +32,15 @@ class StartButton(MainMenuButton):
         self.engine.set_screen("levels")
 
 
-class SettingsButton(MainMenuButton):
+class CreditsButton(MainMenuButton):
     """The settings button."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__("SETTINGS", *args, **kwargs)
+        super().__init__("CREDITS", *args, **kwargs)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
-        print("Settings button clicked")
+        self.engine.set_screen("credits")
 
 
 class QuitButton(MainMenuButton):
@@ -58,7 +58,7 @@ class MainMenuScreen(Screen):
     """The main menu screen"""
 
     start_button: StartButton
-    settings_button: SettingsButton
+    credits_button: CreditsButton
     quit_button: QuitButton
 
     SCALE: int = 3
@@ -76,16 +76,16 @@ class MainMenuScreen(Screen):
         engine.add_layer("buttons", pygame.sprite.RenderUpdates())
 
         self.start_button = StartButton(engine, scale=self.SCALE, size=self.BUTTON_SIZE)
-        self.settings_button = SettingsButton(engine, scale=self.SCALE, size=self.BUTTON_SIZE)
+        self.credits_button = CreditsButton(engine, scale=self.SCALE, size=self.BUTTON_SIZE)
         self.quit_button = QuitButton(engine, scale=self.SCALE, size=self.BUTTON_SIZE)
 
         engine.add_sprite("buttons", self.start_button)
-        engine.add_sprite("buttons", self.settings_button)
+        engine.add_sprite("buttons", self.credits_button)
         engine.add_sprite("buttons", self.quit_button)
 
         self.size_components(engine.display.get_size())
 
-        self.logger.info("Initialized game screen")
+        self.logger.info("Initialized main menu screen")
 
     def on_event(self, engine: Engine, delta_time: float, events: list[pygame.event.Event]):
         """Called when an event occurs."""
@@ -109,13 +109,13 @@ class MainMenuScreen(Screen):
         # Buttons
         button_width = max(
             self.start_button.size[0],
-            self.settings_button.size[0],
+            self.credits_button.size[0],
             self.quit_button.size[0],
         )
 
         button_height = max(
             self.start_button.size[1],
-            self.settings_button.size[1],
+            self.credits_button.size[1],
             self.quit_button.size[1],
         )
 
@@ -123,7 +123,7 @@ class MainMenuScreen(Screen):
         button_y = (size[1] - 3 * button_height - 2 * margin) // 2
 
         self.start_button.set_position((button_x, button_y))
-        self.settings_button.set_position((button_x, button_y + button_height + margin))
+        self.credits_button.set_position((button_x, button_y + button_height + margin))
         self.quit_button.set_position((button_x, button_y + 2 * button_height + 2 * margin))
 
         self.logger.info("Updated components dimensions")

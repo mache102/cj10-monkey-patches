@@ -36,7 +36,7 @@ class BackButton(components.LabeledButton):
 
 
 class LevelsScreen(Screen):
-    """The main menu screen"""
+    """The level screen"""
 
     level_buttons: list[LevelButton]
     back_button: BackButton
@@ -49,7 +49,7 @@ class LevelsScreen(Screen):
     def on_init(self, engine: Engine):
         """Called when the screen is initialized."""
         self.logger = logging.getLogger(__name__)
-        self.logger.info("Initializing main menu")
+        self.logger.info("Initializing levels")
 
         engine.background_color = (240, 240, 240)
 
@@ -73,7 +73,7 @@ class LevelsScreen(Screen):
 
         self.size_components(engine.display.get_size())
 
-        self.logger.info("Initialized game screen")
+        self.logger.info("Initialized levels screen")
 
     def on_event(self, engine: Engine, delta_time: float, events: list[pygame.event.Event]):
         """Called when an event occurs."""
