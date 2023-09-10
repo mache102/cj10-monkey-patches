@@ -3,6 +3,7 @@ import logging
 import pygame
 
 from main.engine import Engine
+from main.screens.credits import CreditsScreen
 from main.screens.game import GameScreen
 from main.screens.levels import LevelsScreen
 from main.screens.main_menu import MainMenuScreen
@@ -26,5 +27,6 @@ if __name__ == "__main__":
     engine.add_screen("levels", LevelsScreen(len(puzzle_tile_sizes)))
     for puzzle_no, tile_size in enumerate(puzzle_tile_sizes):
         engine.add_screen(f"game{puzzle_no}", GameScreen(puzzle_no, tile_size))
+    engine.add_screen("credits", CreditsScreen())
 
     engine.mainloop(init_screen="main_menu")
