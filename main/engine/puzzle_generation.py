@@ -1,4 +1,4 @@
-
+import itertools
 import random
 from typing import Any, Literal, Optional
 
@@ -39,17 +39,22 @@ def generate_puzzle(
 
     rng = random.Random(seed)
 
-    # scale up difficulty (number of operations, each tick adds more possibilities too)
-
-    difficulty *= 4
-
     original = tiles.copy()
     # Overwrite original image array
     puzzled = tiles
     auto_solve_steps = []
 
-    for step in range(difficulty):
-        target_tile = (rng.randint(0, puzzled.shape[0]-1), rng.randint(0, puzzled.shape[1]-1))
+    # Touch each tile at least once
+    difficulty = int(tiles.shape[0] * tiles.shape[1] / 4 * difficulty)
+
+    target_tiles = list(itertools.product(range(tiles.shape[0]), range(tiles.shape[1])))
+    target_tiles.extend(
+        (rng.randint(0, puzzled.shape[0]-1), rng.randint(0, puzzled.shape[1]-1))
+        for _ in range(difficulty)
+    )
+    rng.shuffle(target_tiles)
+
+    for target_tile in target_tiles:
 
         match rng.randint(0, 5):
             case 0:

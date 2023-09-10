@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import pygame
 from pydantic import BaseModel, Field
@@ -74,7 +75,7 @@ class Engine:
     def add_layer(
         self,
         name: str,
-        layer: pygame.sprite.RenderUpdates,
+        layer: Optional[pygame.sprite.RenderUpdates] = None,
         priority: int | None = None,
     ):
         """
@@ -93,6 +94,9 @@ class Engine:
 
         if name in self._layers:
             raise ValueError("Duplicate layer name")
+
+        if layer is None:
+            layer = pygame.sprite.RenderUpdates()
 
         self._layers[name] = Layer(priority=priority, *layer)
 

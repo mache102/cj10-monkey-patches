@@ -73,7 +73,7 @@ class MainMenuScreen(Screen):
         engine.background_color = (240, 240, 240)
 
         # Buttons
-        engine.add_layer("buttons", pygame.sprite.RenderUpdates())
+        engine.add_layer("buttons")
 
         self.start_button = StartButton(engine, scale=self.SCALE, size=self.BUTTON_SIZE)
         self.credits_button = CreditsButton(engine, scale=self.SCALE, size=self.BUTTON_SIZE)

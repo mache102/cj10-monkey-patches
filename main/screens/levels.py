@@ -18,7 +18,7 @@ class LevelButton(components.LabeledButton):
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
-        self.engine.set_screen("game")
+        self.engine.set_screen(f"game{self.level}")
 
 
 class BackButton(components.LabeledButton):
@@ -41,10 +41,13 @@ class LevelsScreen(Screen):
     level_buttons: list[LevelButton]
     back_button: BackButton
 
-    LEVEL_COUNT: int = 10  # TODO: Load from file
+    LEVEL_COUNT: int
     SCALE: int = 3
     BUTTON_SIZE: tuple[int, int] = (70, 12)
     BUTTON_MARGIN: int = 4
+
+    def __init__(self, level_count: int):
+        self.LEVEL_COUNT = level_count
 
     def on_init(self, engine: Engine):
         """Called when the screen is initialized."""
@@ -54,7 +57,7 @@ class LevelsScreen(Screen):
         engine.background_color = (240, 240, 240)
 
         # Buttons
-        engine.add_layer("buttons", pygame.sprite.RenderUpdates())
+        engine.add_layer("buttons")
 
         self.level_buttons = []
         for level in range(self.LEVEL_COUNT):

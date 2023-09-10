@@ -192,7 +192,7 @@ class Text(BaseComponent):
         text_surface = text_rendering.render_to_surface(text.upper(), color=color, scale=scale)
         self.image = text_surface
         self.rect = text_surface.get_rect()
-        self.rect.move_ip(position[1], position[0])
+        self.rect.move_ip(position[0], position[1])
 
 
 class Image(BaseComponent):

@@ -173,5 +173,10 @@ def width_of_rendered_text(text: str, scale: int = 1) -> int:
     return (sum(LETTER_NDARRAYS[i].shape[0] for i in text) + LETTER_SPACING * len(text)) * scale
 
 
+def height_of_rendered_text(text: str, scale: int = 1) -> int:
+    """Compute the height in dots that a given string will render with"""
+    return LINE_HEIGHT * scale
+
+
 if __name__ == '__main__':
-    print(render_ascii_art("ABCDEF"))
+    pass
