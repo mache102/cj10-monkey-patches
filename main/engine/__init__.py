@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import pygame
 from pydantic import BaseModel, Field
@@ -31,6 +32,7 @@ class Engine:
     running: bool = False
     logger: logging.Logger
     clock: pygame.time.Clock
+    level: int | None
     background_color: tuple[int, int, int]
     settings: EngineSettings
 
@@ -60,6 +62,7 @@ class Engine:
         # Do not pass fps here, as this clock is multi-use
         self.clock = pygame.time.Clock()
 
+        self.level = None
         self.background_color = (0, 255, 0)
         self._layers = {}
         self.screen_man = ScreenManager()
@@ -72,7 +75,7 @@ class Engine:
     def add_layer(
         self,
         name: str,
-        layer: pygame.sprite.RenderUpdates,
+        layer: Optional[pygame.sprite.RenderUpdates] = None,
         priority: int | None = None,
     ):
         """
@@ -91,6 +94,9 @@ class Engine:
 
         if name in self._layers:
             raise ValueError("Duplicate layer name")
+
+        if layer is None:
+            layer = pygame.sprite.RenderUpdates()
 
         self._layers[name] = Layer(priority=priority, *layer)
 

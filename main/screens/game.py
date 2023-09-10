@@ -10,6 +10,9 @@ from pydantic import BaseModel
 from main import image_ops
 from main.engine import Engine, Screen, components, utils
 from main.engine.puzzle_generation import Puzzle, generate_puzzle
+from main.engine.text_rendering import (
+    height_of_rendered_text, width_of_rendered_text
+)
 from main.image_ops import conv_img_arr_to_tile, conv_pil_to_numpy
 from main.type_aliases import ImageArray, TileArray
 
@@ -133,53 +136,66 @@ class ImageOpButton(components.LabeledButton):
     """Image operation button"""
 
     scrambled_image: ScrambledImage
+    game: 'GameScreen'
 
-    def __init__(self, op_name: str, size: tuple[int, int], scrambled_image: ScrambledImage):
-        super().__init__(op_name, size=size)
+    def __init__(
+        self,
+        op_name: str,
+        scrambled_image: ScrambledImage,
+        scale: int = 1,
+        size: tuple[int, int] = (50, 12),
+        game: 'GameScreen' = None,
+    ):
+        super().__init__(op_name, scale=scale, size=size)
         self.scrambled_image = scrambled_image
+        self.game = game
 
 
 class FlipButton(ImageOpButton):
     """A flip button."""
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("FLIP", size=(200, 50), scrambled_image=scrambled_image)
+    def __init__(self, scale: int, scrambled_image: ScrambledImage, game: 'GameScreen'):
+        super().__init__("FLIP", scale=scale, scrambled_image=scrambled_image, game=game)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
         image_ops.flip_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
         self.scrambled_image.update_surface()
+        self.game.check_victory()
 
     def on_key_press(self, event: pygame.event.Event):
         """Called when the keyboard shortcut is pressed."""
         if event.key == pygame.K_q:
             image_ops.flip_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
             self.scrambled_image.update_surface()
+            self.game.check_victory()
 
 
 class RotateButton(ImageOpButton):
     """A rotate button."""
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("ROTATE", size=(200, 50), scrambled_image=scrambled_image)
+    def __init__(self, scale: int, scrambled_image: ScrambledImage, game: 'GameScreen'):
+        super().__init__("ROTATE", scale=scale, scrambled_image=scrambled_image, game=game)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
         image_ops.rotate_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
         self.scrambled_image.update_surface()
+        self.game.check_victory()
 
     def on_key_press(self, event: pygame.event.Event):
         """Called when the keyboard shortcut is pressed."""
         if event.key == pygame.K_w:
             image_ops.rotate_tiles(self.scrambled_image.tile_arr, self.scrambled_image.selected_tile)
             self.scrambled_image.update_surface()
+            self.game.check_victory()
 
 
 class SwapButton(ImageOpButton):
     """A swap button."""
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("SWAP", size=(200, 50), scrambled_image=scrambled_image)
+    def __init__(self, scale: int, scrambled_image: ScrambledImage, game: 'GameScreen'):
+        super().__init__("SWAP", scale=scale, scrambled_image=scrambled_image, game=game)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
@@ -188,14 +204,15 @@ class SwapButton(ImageOpButton):
         if prev_tile != current_tile:
             image_ops.swap_tiles(self.scrambled_image.tile_arr, prev_tile, current_tile)
             self.scrambled_image.update_surface()
+            self.game.check_victory()
             print("Swapped")
 
 
 class FilterButton(ImageOpButton):
     """A filter button."""
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("FILTER", size=(200, 50), scrambled_image=scrambled_image)
+    def __init__(self, scale: int, scrambled_image: ScrambledImage, game: 'GameScreen'):
+        super().__init__("FILTER", scale=scale, scrambled_image=scrambled_image, game=game)
 
     def on_click(self, event: pygame.event.Event):
         """Called when the button is clicked."""
@@ -212,9 +229,10 @@ class NewPuzzleButton(components.LabeledButton):
 
     TIME_PER_STEP = 0.25
 
-    def __init__(self, scrambled_image: ScrambledImage):
-        super().__init__("RESET", size=(200, 50))
+    def __init__(self, scale: int, scrambled_image: ScrambledImage, game: 'GameScreen'):
+        super().__init__("NEW PUZZLE", scale=scale, size=(75, 12))
         self.scrambled_image = scrambled_image
+        self.game = game
 
     def on_click(self, event: pygame.event.Event):
         """Solve, then generate a new puzzle on click."""
@@ -223,6 +241,8 @@ class NewPuzzleButton(components.LabeledButton):
             self.scrambled_image.tile_arr[:] = self.puzzle.puzzle_tiles
             self.solving = True
             self.steps_remaining = self.puzzle.puzzle_to_original
+            self.label = "..."
+            self.render_text()
             return
 
         puzzle = generate_puzzle(
@@ -231,6 +251,8 @@ class NewPuzzleButton(components.LabeledButton):
         )
         self.scrambled_image.update_surface()
         self.puzzle = puzzle
+        self.label = "SOLVE"
+        self.render_text()
 
     def update(self, delta_time: float, events: list[pygame.event.Event]):
         """Handle animating a puzzle solution."""
@@ -248,14 +270,69 @@ class NewPuzzleButton(components.LabeledButton):
                 self.solving_animation_time = 0
 
                 if not self.steps_remaining:
+                    self.game.check_victory()  # debug
                     self.solving = False
                     self.puzzle = None
+                    self.label = "NEW PUZZLE"
+                    self.render_text()
+
+
+class FadingAnnouncement(components.Text):
+    """Displays a textual announcement over the game that fades after some time."""
+
+    # Seconds to display the announcement
+    display_for: float
+    displayed_for: float = 0.0
+    # Seconds over which the announcement fades before vanishing
+    fade_over: float
+    faded_over: float = 0.0
+    fading: bool = False
+
+    def __init__(
+        self,
+        text: str,
+        display_for: float = 3.0,
+        fade_over: float = 1.0,
+        position: Optional[tuple[int, int]] = None,
+        color: tuple[int, int, int] = (255, 0, 255),
+        scale: int = 1,
+        engine: 'Engine' = None,
+    ):
+        if position is None:
+            # Default to display centered
+            position = engine.display.get_size()
+            text_size = width_of_rendered_text(text, scale), height_of_rendered_text(text, scale)
+            position = position[0] // 2 - text_size[0] // 2, position[1] // 2 - text_size[1]
+
+        super().__init__(text, position, color, scale)
+        self.display_for = display_for
+        self.fade_over = fade_over
+        self.engine = engine
+
+    def update(self, delta_time: float, events: list[pygame.event.Event]):
+        """Slowly fade out the text after the configured time."""
+        super().update(delta_time, events)
+
+        if not self.fading:
+            self.displayed_for += delta_time
+            if self.displayed_for > self.display_for:
+                self.fading = True
+                delta_time = self.displayed_for - self.display_for
+
+        if self.fading:
+            self.faded_over += delta_time
+            fade_percentage = self.faded_over / self.fade_over
+            if fade_percentage <= 1.0:
+                self.image.set_alpha(255 - int(fade_percentage * 255))
+            else:
+                self.engine.remove_sprite("announcements", self)
 
 
 class GameScreen(Screen):
     """The game screen."""
 
     logger: logging.Logger
+    engine: Engine
 
     image: ScrambledImage
     flip_button: FlipButton
@@ -264,17 +341,19 @@ class GameScreen(Screen):
     filter_button: FilterButton
     reset_button: NewPuzzleButton
 
-    SCALE: int = 4
+    SCALE: int = 3
+    BUTTON_MARGIN: int = 4
 
     def on_init(self, engine: Engine):
         """Called when the screen is initialized."""
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing game screen")
+        self.engine = engine
 
         engine.background_color = (240, 240, 240)
 
         # Image
-        engine.add_layer("image", pygame.sprite.RenderUpdates())
+        engine.add_layer("image")
 
         scramble_config = ScrambleConfig(  # TODO: Use level configs
             tile_size=50,
@@ -287,13 +366,13 @@ class GameScreen(Screen):
         engine.add_sprite("image", self.image)
 
         # Buttons
-        engine.add_layer("buttons", pygame.sprite.RenderUpdates())
+        engine.add_layer("buttons")
 
-        self.flip_button = FlipButton(self.image)
-        self.rotate_button = RotateButton(self.image)
-        self.swap_button = SwapButton(self.image)
-        self.filter_button = FilterButton(self.image)
-        self.reset_button = NewPuzzleButton(self.image)
+        self.flip_button = FlipButton(self.SCALE, self.image, self)
+        self.rotate_button = RotateButton(self.SCALE, self.image, self)
+        self.swap_button = SwapButton(self.SCALE, self.image, self)
+        self.filter_button = FilterButton(self.SCALE, self.image, self)
+        self.reset_button = NewPuzzleButton(self.SCALE, self.image, self)
 
         engine.add_sprite("buttons", self.flip_button)
         engine.add_sprite("buttons", self.rotate_button)
@@ -303,13 +382,29 @@ class GameScreen(Screen):
 
         self.size_components(engine.display.get_size())
 
+        engine.add_layer("announcements")
+
         self.logger.info("Initialized game screen")
 
     def on_event(self, engine: Engine, delta_time: float, events: list[pygame.event.Event]):
-        """Called when an event occurs."""
+        """Called each frame with all new events."""
         for event in events:
             if event.type == pygame.VIDEORESIZE:
                 self.size_components((event.w, event.h))
+
+    def check_victory(self):
+        """Determine if the puzzle is solved, and if so display a victory text!"""
+        if self.reset_button.puzzle and (self.image.tile_arr == self.reset_button.puzzle.original_tiles).all():
+            print("WIN!")
+            self.engine.add_sprite(
+                "announcements",
+                FadingAnnouncement(
+                    "YOU WIN!",
+                    engine=self.engine,
+                    color=(50, 255, 50),
+                    scale=self.SCALE + 3,
+                ),
+            )
 
     def on_end(self, engine: Engine):
         """Called when the screen is ended."""
@@ -321,37 +416,39 @@ class GameScreen(Screen):
 
         Specifications:
         - The buttons are in a row at the bottom of the screen,
-          with a 16px margin between them, and 16px from the edge of the screen.
-        - The image is centered above the buttons, with a 16px margin between them.
+          with a 4px margin between them, and 4px from the edge of the screen.
+        - The image is centered above the buttons, with a 4px margin between them.
         """
+        margin = self.BUTTON_MARGIN * self.SCALE
+
         # Buttons
-        self.flip_button.set_position((16, size[1] - 16 - self.flip_button.size[1]))
+        self.flip_button.set_position((margin, size[1] - margin - self.flip_button.size[1]))
         self.rotate_button.set_position((
-            self.flip_button.position[0] + self.flip_button.size[0] + 16,
-            size[1] - 16 - self.rotate_button.size[1]
+            self.flip_button.position[0] + self.flip_button.size[0] + margin,
+            size[1] - margin - self.rotate_button.size[1]
         ))
         self.swap_button.set_position((
-            self.rotate_button.position[0] + self.rotate_button.size[0] + 16,
-            size[1] - 16 - self.swap_button.size[1]
+            self.rotate_button.position[0] + self.rotate_button.size[0] + margin,
+            size[1] - margin - self.swap_button.size[1]
         ))
         self.filter_button.set_position((
-            self.swap_button.position[0] + self.swap_button.size[0] + 16,
-            size[1] - 16 - self.filter_button.size[1]
+            self.swap_button.position[0] + self.swap_button.size[0] + margin,
+            size[1] - margin - self.filter_button.size[1]
         ))
         self.reset_button.set_position((
-            self.filter_button.position[0] + self.filter_button.size[0] + 16,
-            size[1] - 16 - self.reset_button.size[1]
+            self.filter_button.position[0] + self.filter_button.size[0] + margin,
+            size[1] - margin - self.reset_button.size[1]
         ))
 
         # Image
-        buttons_row_size = self.flip_button.size[0] + 16\
-            + self.rotate_button.size[0] + 16\
-            + self.swap_button.size[0] + 16\
-            + self.filter_button.size[0] + 16\
+        buttons_row_size = self.flip_button.size[0] + margin\
+            + self.rotate_button.size[0] + margin\
+            + self.swap_button.size[0] + margin\
+            + self.filter_button.size[0] + margin\
             + self.reset_button.size[0]
 
         img_side_size = buttons_row_size
-        max_height = size[1] - 16 - self.flip_button.size[1] - 16 - 16
+        max_height = size[1] - margin - self.flip_button.size[1] - margin - margin
         if max_height < img_side_size:
             img_side_size = max_height
 
@@ -359,8 +456,8 @@ class GameScreen(Screen):
         self.image.update_surface()
 
         position = (
-            (16 + buttons_row_size + 16 - img_side_size) // 2,
-            (size[1] - 16 - self.flip_button.size[1] - 16 - img_side_size) // 2,
+            (margin + buttons_row_size + margin - img_side_size) // 2,
+            (size[1] - margin - self.flip_button.size[1] - margin - img_side_size) // 2,
         )
         self.image.set_position(position)
 
