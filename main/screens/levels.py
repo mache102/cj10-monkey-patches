@@ -71,7 +71,7 @@ class LevelsScreen(Screen):
             )
             engine.add_sprite("buttons", self.level_buttons[-1])
 
-        self.back_button = BackButton(engine, scale=self.SCALE, size=self.BUTTON_SIZE)
+        self.back_button = BackButton(engine, scale=self.SCALE)
         engine.add_sprite("buttons", self.back_button)
 
         self.size_components(engine.display.get_size())
