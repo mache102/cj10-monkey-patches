@@ -15,12 +15,16 @@ logging.getLogger().setLevel(LOG_LEVEL)
 
 pygame.init()
 
+# Note: When you add an image, append the tile size to the end of this tuple
+# and call the image "puzzle{}.png"
+puzzle_tile_sizes = (100, 200, 64, 128, 60)
 
 if __name__ == "__main__":
     engine = Engine()
     engine.add_screen("test", TestScreen())
     engine.add_screen("main_menu", MainMenuScreen())
-    engine.add_screen("levels", LevelsScreen())
-    engine.add_screen("game", GameScreen())
+    engine.add_screen("levels", LevelsScreen(len(puzzle_tile_sizes)))
+    for puzzle_no, tile_size in enumerate(puzzle_tile_sizes):
+        engine.add_screen(f"game{puzzle_no}", GameScreen(puzzle_no, tile_size))
 
     engine.mainloop(init_screen="main_menu")

@@ -179,4 +179,4 @@ def height_of_rendered_text(text: str, scale: int = 1) -> int:
 
 
 if __name__ == '__main__':
-    print(render_ascii_art("ABCDEF"))
+    pass

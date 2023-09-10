@@ -208,17 +208,6 @@ class SwapButton(ImageOpButton):
             print("Swapped")
 
 
-class FilterButton(ImageOpButton):
-    """A filter button."""
-
-    def __init__(self, scale: int, scrambled_image: ScrambledImage, game: 'GameScreen'):
-        super().__init__("FILTER", scale=scale, scrambled_image=scrambled_image, game=game)
-
-    def on_click(self, event: pygame.event.Event):
-        """Called when the button is clicked."""
-        print("Filtered")
-
-
 class NewPuzzleButton(components.LabeledButton):
     """Transitions from a solved puzzle to an unsolved puzzle, and solves the current one if unsolved."""
 
@@ -328,6 +317,18 @@ class FadingAnnouncement(components.Text):
                 self.engine.remove_sprite("announcements", self)
 
 
+class BackButton(components.LabeledButton):
+    """Goes back to puzzle selection screen"""
+
+    def __init__(self, scale: int, game: 'GameScreen'):
+        super().__init__('BACK', scale=scale)
+        self.game = game
+
+    def on_click(self, event: pygame.event.Event):
+        """Sets the screen to the level screenpre-"""
+        self.game.engine.set_screen("levels")
+
+
 class GameScreen(Screen):
     """The game screen."""
 
@@ -338,11 +339,17 @@ class GameScreen(Screen):
     flip_button: FlipButton
     rotate_button: RotateButton
     swap_button: SwapButton
-    filter_button: FilterButton
     reset_button: NewPuzzleButton
 
     SCALE: int = 3
     BUTTON_MARGIN: int = 4
+
+    tile_size: int
+    puzzle_no: int
+
+    def __init__(self, puzzle_no: int, tile_size: int):
+        self.puzzle_no = puzzle_no
+        self.tile_size = tile_size
 
     def on_init(self, engine: Engine):
         """Called when the screen is initialized."""
@@ -356,8 +363,8 @@ class GameScreen(Screen):
         engine.add_layer("image")
 
         scramble_config = ScrambleConfig(  # TODO: Use level configs
-            tile_size=50,
-            path=Path("pydis_logo.png"),
+            tile_size=self.tile_size,
+            path=Path(f"puzzle{self.puzzle_no}.png"),
             outline_thickness=1,
             outline_color=(0, 0, 0, 255),
         )
@@ -371,14 +378,14 @@ class GameScreen(Screen):
         self.flip_button = FlipButton(self.SCALE, self.image, self)
         self.rotate_button = RotateButton(self.SCALE, self.image, self)
         self.swap_button = SwapButton(self.SCALE, self.image, self)
-        self.filter_button = FilterButton(self.SCALE, self.image, self)
         self.reset_button = NewPuzzleButton(self.SCALE, self.image, self)
+        self.back_button = BackButton(self.SCALE, self)
 
         engine.add_sprite("buttons", self.flip_button)
         engine.add_sprite("buttons", self.rotate_button)
         engine.add_sprite("buttons", self.swap_button)
-        engine.add_sprite("buttons", self.filter_button)
         engine.add_sprite("buttons", self.reset_button)
+        engine.add_sprite("buttons", self.back_button)
 
         self.size_components(engine.display.get_size())
 
@@ -405,6 +412,10 @@ class GameScreen(Screen):
                     scale=self.SCALE + 3,
                 ),
             )
+            self.reset_button.solving = False
+            self.reset_button.puzzle = None
+            self.reset_button.label = "NEW PUZZLE"
+            self.reset_button.render_text()
 
     def on_end(self, engine: Engine):
         """Called when the screen is ended."""
@@ -421,34 +432,31 @@ class GameScreen(Screen):
         """
         margin = self.BUTTON_MARGIN * self.SCALE
 
+        width, height = size
+
         # Buttons
-        self.flip_button.set_position((margin, size[1] - margin - self.flip_button.size[1]))
+        self.flip_button.set_position((margin, height - margin - self.flip_button.size[1]))
         self.rotate_button.set_position((
             self.flip_button.position[0] + self.flip_button.size[0] + margin,
-            size[1] - margin - self.rotate_button.size[1]
+            height - margin - self.rotate_button.size[1]
         ))
         self.swap_button.set_position((
             self.rotate_button.position[0] + self.rotate_button.size[0] + margin,
-            size[1] - margin - self.swap_button.size[1]
-        ))
-        self.filter_button.set_position((
-            self.swap_button.position[0] + self.swap_button.size[0] + margin,
-            size[1] - margin - self.filter_button.size[1]
+            height - margin - self.swap_button.size[1]
         ))
         self.reset_button.set_position((
-            self.filter_button.position[0] + self.filter_button.size[0] + margin,
-            size[1] - margin - self.reset_button.size[1]
+            self.swap_button.position[0] + self.swap_button.size[0] + margin,
+            height - margin - self.reset_button.size[1]
         ))
 
         # Image
-        buttons_row_size = self.flip_button.size[0] + margin\
-            + self.rotate_button.size[0] + margin\
-            + self.swap_button.size[0] + margin\
-            + self.filter_button.size[0] + margin\
-            + self.reset_button.size[0]
+        buttons_row_size = (self.flip_button.size[0] + margin
+                            + self.rotate_button.size[0] + margin
+                            + self.swap_button.size[0] + margin
+                            + self.reset_button.size[0])
 
         img_side_size = buttons_row_size
-        max_height = size[1] - margin - self.flip_button.size[1] - margin - margin
+        max_height = height - margin - self.flip_button.size[1] - margin * 2
         if max_height < img_side_size:
             img_side_size = max_height
 
@@ -457,8 +465,9 @@ class GameScreen(Screen):
 
         position = (
             (margin + buttons_row_size + margin - img_side_size) // 2,
-            (size[1] - margin - self.flip_button.size[1] - margin - img_side_size) // 2,
+            (height - margin - self.flip_button.size[1] - margin - img_side_size) // 2,
         )
         self.image.set_position(position)
-
         self.logger.info("Updated components dimensions")
+
+        self.back_button.set_position((width - self.back_button.size[0] - 10, 10))
