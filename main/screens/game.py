@@ -426,7 +426,7 @@ class GameScreen(Screen):
         Adjust the size and position of components according to the screen size
 
         Specifications:
-        - The buttons are in a row at the bottom of the screen,
+        - The buttons are in a row at the bottom center of the screen,
           with a 4px margin between them, and 4px from the edge of the screen.
         - The image is centered above the buttons, with a 4px margin between them.
         """
@@ -435,19 +435,21 @@ class GameScreen(Screen):
         width, height = size
 
         # Buttons
-        self.flip_button.set_position((margin, height - margin - self.flip_button.size[1]))
-        self.rotate_button.set_position((
-            self.flip_button.position[0] + self.flip_button.size[0] + margin,
-            height - margin - self.rotate_button.size[1]
-        ))
-        self.swap_button.set_position((
-            self.rotate_button.position[0] + self.rotate_button.size[0] + margin,
-            height - margin - self.swap_button.size[1]
-        ))
-        self.reset_button.set_position((
-            self.swap_button.position[0] + self.swap_button.size[0] + margin,
-            height - margin - self.reset_button.size[1]
-        ))
+        buttons = [
+            self.flip_button,
+            self.rotate_button,
+            self.swap_button,
+            self.reset_button,
+        ]
+        button_width = sum(button.size[0] for button in buttons) + margin * (len(buttons) - 1)
+        button_height = max(button.size[1] for button in buttons)
+
+        button_stack_x = width // 2 - button_width // 2
+        button_stack_y = height - button_height - margin
+
+        for button in buttons:
+            button.set_position((button_stack_x, button_stack_y))
+            button_stack_x += button.size[0] + margin
 
         # Image
         buttons_row_size = (self.flip_button.size[0] + margin
@@ -464,10 +466,10 @@ class GameScreen(Screen):
         self.image.update_surface()
 
         position = (
-            (margin + buttons_row_size + margin - img_side_size) // 2,
+            width // 2 - img_side_size // 2,
             (height - margin - self.flip_button.size[1] - margin - img_side_size) // 2,
         )
         self.image.set_position(position)
         self.logger.info("Updated components dimensions")
 
-        self.back_button.set_position((width - self.back_button.size[0] - 10, 10))
+        self.back_button.set_position((margin, margin))
