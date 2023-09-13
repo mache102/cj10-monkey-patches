@@ -3,186 +3,54 @@
 
 ## Team Members
 - @bast0006 (.bast.)
-- @Chara98 (chara98)
-- @Ethan-Mr-Hunt (brucewayne2800)
+- ~~@Chara98 (chara98)~~ (Dropped out)
+- ~~@Ethan-Mr-Hunt (brucewayne2800)~~ (Dropped out)
 - @FieryIceStickie (fieryicestickie)
 - @LioQing (lioqing)
 - @mache102 (segtwo)
 
 
+## What does our project do?
 
-___
-
-# Python Discord Code Jam Repository Template
-
-## A Primer
-Hello code jam participants! We've put together this repository template for you to use in [our code jams](https://pythondiscord.com/events/) or even other Python events!
-
-This document will contain the following information:
-1. [What does this template contain?](#what-does-this-template-contain)
-2. [How do I use it?](#how-do-i-use-it)
-3. [How do I adapt it to my project?](#how-do-i-adapt-it-to-my-project)
-
-You can also look at [our style guide](https://pythondiscord.com/events/code-jams/code-style-guide/) to get more information about what we consider a maintainable code style.
-
-## What does this template contain?
-
-Here is a quick rundown of what each file in this repository contains:
-- `LICENSE`: [The MIT License](https://opensource.org/licenses/MIT), an OSS approved license which grants rights to everyone to use and modify your projects and limits your liability. We highly recommend you to read the license.
-- `.gitignore`: A list of files that will be ignored by Git. Most of them are auto-generated or contain data that you wouldn't want to share publicly.
-- `dev-requirements.txt`: Every PyPI packages used for the project's development, to ensure a common and maintainable code style. [More on that below](#using-the-default-pip-setup).
-- `tox.ini`: The configurations of two of our style tools: [`flake8`](https://pypi.org/project/flake8/) and [`isort`](https://pypi.org/project/isort/).
-- `.pre-commit-config.yaml`: The configuration of the [`pre-commit`](https://pypi.org/project/pre-commit/) tool.
-- `.github/workflows/lint.yaml`: A [GitHub Actions](https://github.com/features/actions) workflow, a set of actions run by GitHub on their server after each push, to ensure the style requirements are met.
-
-Each of these files have comments for you to understand easily, and modify to fit your needs.
-
-### flake8: general style rules
-
-Our first and probably most important tool is flake8. It will run a set of plugins on your codebase and warn you about any non-conforming lines.
-Here is a sample output:
-```
-~> flake8
-./app.py:1:6: N802 function name 'helloWorld' should be lowercase
-./app.py:1:16: E201 whitespace after '('
-./app.py:2:1: D400 First line should end with a period
-./app.py:2:1: D403 First word of the first line should be properly capitalized
-./app.py:3:19: E225 missing whitespace around operator
-```
-
-Each line corresponds to an error. The first part is the file path, then the line number, and the column index.
-Then comes the error code, a unique identifier of the error, and then a human-readable message.
-
-If, for any reason, you do not wish to comply with this specific error on a specific line, you can add `# noqa: CODE` at the end of the line.
-For example:
-```python
-def helloWorld():  # noqa: N802
-    ...
-```
-will pass linting. Although we do not recommend ignoring errors unless you have a good reason to do so.
-
-It is run by calling `flake8` in the project root.
-
-#### Plugin List:
-
-- `flake8-docstring`: Checks that you properly documented your code.
-
-### ISort: automatic import sorting
-
-This second tool will sort your imports according to the [PEP8](https://www.python.org/dev/peps/pep-0008/#imports). That's it! One less thing for you to do!
-
-It is run by calling `isort .` in the project root. Notice the dot at the end, it tells ISort to use the current directory.
-
-### Pre-commit: run linting before committing
-
-This third tool doesn't check your code, but rather makes sure that you actually *do* check it.
-
-It makes use of a feature called [Git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) which allow you to run a piece of code before running `git commit`.
-The good thing about it is that it will cancel your commit if the lint doesn't pass. You won't have to wait for Github Actions to report and have a second fix commit.
-
-It is *installed* by running `pre-commit install` and can be run manually by calling only `pre-commit`.
-
-[Lint before you push!](https://soundcloud.com/lemonsaurusrex/lint-before-you-push)
-
-#### Hooks List:
-
-- `check-toml`: Lints and corrects your TOML files.
-- `check-yaml`: Lints and corrects your YAML files.
-- `end-of-file-fixer`: Makes sure you always have an empty line at the end of your file.
-- `trailing-whitespaces`: Removes whitespaces at the end of each line.
-- `python-check-blanket-noqa`: Forbids you from using noqas on large pieces of code.
-- `isort`: Runs ISort.
-- `flake8`: Runs flake8.
+Our project is a short puzzle game where you receive a scrambled image and you have to modify the image using some predefined operations to uncover the original image (the secret code).
+We have a selection of 5 images to choose from, in increasing order of difficulty to solve.
 
 ## How do I use it?
 
-### Creating your Team Repository
-
-One person in the team, preferably the leader, will have to create the repository and add other members as collaborators.
-
-1. In the top right corner of your screen, where **Clone** usually is, you have a **Use this template** button to click.
-
-![](https://docs.github.com/assets/images/help/repository/use-this-template-button.png)
-
-2. Give the repository a name and a description.
-
-![](https://docs.github.com/assets/images/help/repository/create-repository-name.png)
-
-3. Click **Create repository from template**.
-
-4. Click **Settings** in your newly created repository.
-
-![](https://docs.github.com/assets/images/help/repository/repo-actions-settings.png)
-
-5. In the "Access" section of the sidebar, click **Collaborators**.
-
-![Screenshot from 2023-08-28 14-09-55](https://github.com/python-discord/code-jam-template/assets/63936253/c150110e-d1b5-4e4d-93e0-0a2cf1de352b)
-
-6. Click **Add people**.
-
-7. Insert the names of each of your teammates, and invite them. Once they have accepted the invitation in their email, they will have write access to the repository.
-
-You are now ready to go! Now sit down, relax, and wait for the kickstart!
-Don't forget to swap "Python Discord" in the `LICENSE` file for the name of each of your team members or the name of your team after the start of the jam.
-
-### Using the Default Pip Setup
-
-Our default setup includes a bare requirement file to be used with a [virtual environment](https://docs.python.org/3/library/venv.html).
-
-We recommend this if you never have used any other dependency manager, although if you have, feel free to switch to it. More on that below.
-
-#### Creating the environment
-Create a virtual environment in the folder `.venv`.
+To run the app, clone the repository and run
 ```shell
-$ python -m venv .venv
+python3 -m main.main
 ```
 
-#### Enter the environment
-It will change based on your operating system and shell.
-```shell
-# Linux, Bash
-$ source .venv/bin/activate
-# Linux, Fish
-$ source .venv/bin/activate.fish
-# Linux, Csh
-$ source .venv/bin/activate.csh
-# Linux, PowerShell Core
-$ .venv/bin/Activate.ps1
-# Windows, cmd.exe
-> .venv\Scripts\activate.bat
-# Windows, PowerShell
-> .venv\Scripts\Activate.ps1
-```
+When you first open the app, you will be greeted by the start screen. Select "Start" to start playing the game.
+![Start Screen](../cj10-monkey-patches/DocImages/startscreen.png)
 
-#### Installing the Dependencies
-Once the environment is created and activated, use this command to install the development dependencies.
-```shell
-$ pip install -r dev-requirements.txt
-```
+Then, pick a level from 0-4, with 4 being the most difficult.
+![Level Screen](../cj10-monkey-patches/DocImages/levels.png)
 
-#### Exiting the environment
-Interestingly enough, it is the same for every platform
-```shell
-$ deactivate
-```
+You will see an image. Click "New Puzzle" to scramble the puzzle, and then you can start solving it.
 
-Once the environment is activated, all the commands listed previously should work. We highly recommend that you run `pre-commit install` as soon as possible.
+There are 4 buttons you can choose from:
+1. Flip: Flip the selected tile horizontally. If you want to flip a tile vertically, then you can flip and then rotate twice. This can also be done by pressing 'Q'.
+![Flip Tile Example](../cj10-monkey-patches/DocImages/flip.png)
+2. Rotate: Rotate the selected tile 90° clockwise. This can also be done by pressing 'W'.
+![Rotate Tile Example](../cj10-monkey-patches/DocImages/rotate.png)
+3. Swap: Swap the currently selected tile and previously selected tile.
+![Swap Tile Example](../cj10-monkey-patches/DocImages/swap.png)
+4. New Puzzle/Solve: If it says "New Puzzle", then you can click it to scramble the image. If it says solve, then clicking it will solve the puzzle and let you generate a new one.
+![New Puzzle Example](../cj10-monkey-patches/DocImages/newpuzzle.png)
 
-## How do I adapt it to my project?
+If the puzzle remains scrambled, even after pressing "Solve", then back out and reenter the level.
 
-If you wish to use Pipenv or Poetry, you will have to move the dependencies in `dev-requirements.txt` to the development dependencies of your tool.
+## How does it work?
+Pygame was used for the GUI, while numpy was used for the image processing operations. While Pillow was used to edit the images used in the levels, it isn't used in the final product, as numpy can interface directly with pygame.
 
-We've included a porting of `dev-requirements.txt` to both [poetry](./samples/pyproject.toml) and [pipenv](./samples/Pipfile) in the [samples folder](./samples).
-If you use the poetry setup, make sure to change the project name, description, and authors at the top of the file.
+When the app starts, the images for each level are loaded along with their tile sizes. When buttons are pressed to modify the image, an array view of the image pixels, arranged in tiles, is modified inplace, which changes the pygame surface and thus the image.
 
-When installing new dependencies, don't forget to [pin them](https://pip.pypa.io/en/stable/user_guide/#pinned-version-numbers) by adding a version tag at the end.
-For example, if I wish to install `Click`, a quick look at [PyPI](https://pypi.org/project/click/) tells me that 8.0.1 is the latest version.
-I will then add `click ~= 8.0`, without the last number, to my dependency manager.
+All text for the GUI is generated dynamically, using numpy to convert text into a pixel array, and then mapping that onto a pygame surface to be displayed.
 
-A code jam project is left unmaintained after the end of the event. If the dependencies aren't pinned, the project will break after the first major change in an API.
-
-## Final words
-
-Don't forget to replace this README with an actual description of your project! Images are also welcome!
-
-We hope this template will be helpful. Good luck in the jam!
+## Contributions
+- Bast: Contributed to the development of the GUI, having created aspects like the text rendering for the game text. Also created the functions for randomly shuffling the image tiles.
+- Stickie: Contributed to the numpy functions for each image operation, and provided the images for each level. Also wrote this readme :)
+- LioQing: Contributed to the development of the GUI, writing a lot of the essential pygame code for the GUI. Also made the credits.
+- Segtwo: Managed the project, and kept track of the ideas involved in the project. Wrote docs.md for developer documentation, and also worked on the image operation functions.
