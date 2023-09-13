@@ -23,22 +23,22 @@ python3 -m main.main
 ```
 
 When you first open the app, you will be greeted by the start screen. Select "Start" to start playing the game.
-![Start Screen](../cj10-monkey-patches/DocImages/startscreen.png)
+![Start Screen](../DocImages/startscreen.png)
 
 Then, pick a level from 0-4, with 4 being the most difficult.
-![Level Screen](../cj10-monkey-patches/DocImages/levels.png)
+![Level Screen](../DocImages/levels.png)
 
 You will see an image. Click "New Puzzle" to scramble the puzzle, and then you can start solving it.
 
 There are 4 buttons you can choose from:
 1. Flip: Flip the selected tile horizontally. If you want to flip a tile vertically, then you can flip and then rotate twice. This can also be done by pressing 'Q'.
-![Flip Tile Example](../cj10-monkey-patches/DocImages/flip.png)
+![Flip Tile Example](../DocImages/flip.png)
 2. Rotate: Rotate the selected tile 90° clockwise. This can also be done by pressing 'W'.
-![Rotate Tile Example](../cj10-monkey-patches/DocImages/rotate.png)
+![Rotate Tile Example](../DocImages/rotate.png)
 3. Swap: Swap the currently selected tile and previously selected tile.
-![Swap Tile Example](../cj10-monkey-patches/DocImages/swap.png)
+![Swap Tile Example](../DocImages/swap.png)
 4. New Puzzle/Solve: If it says "New Puzzle", then you can click it to scramble the image. If it says solve, then clicking it will solve the puzzle and let you generate a new one.
-![New Puzzle Example](../cj10-monkey-patches/DocImages/newpuzzle.png)
+![New Puzzle Example](../DocImages/newpuzzle.png)
 
 If the puzzle remains scrambled, even after pressing "Solve", then back out and reenter the level.
 
